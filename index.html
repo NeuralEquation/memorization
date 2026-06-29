@@ -78,7 +78,7 @@
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(4, minmax(82px, 1fr));
+      grid-template-columns: repeat(5, minmax(72px, 1fr));
       gap: 8px;
       width: min(520px, 100%);
     }
@@ -399,7 +399,7 @@
         padding: 10px;
       }
       .toolbar { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: repeat(2, minmax(0,1fr)); min-width: 0; }
+      .stats { grid-template-columns: repeat(5, minmax(0,1fr)); min-width: 0; }
       .choices { grid-template-columns: 1fr; }
       .main { min-height: auto; }
       .question-card { min-height: 0; }
@@ -409,7 +409,7 @@
         background: var(--bg);
       }
       .stats {
-        grid-template-columns: repeat(4, minmax(0,1fr));
+        grid-template-columns: repeat(5, minmax(0,1fr));
         gap: 6px;
       }
       .stat {
@@ -460,6 +460,7 @@
       <div class="stats" aria-label="成績">
         <div class="stat"><span>正解</span><strong id="okCount">0</strong></div>
         <div class="stat"><span>ミス</span><strong id="missCount">0</strong></div>
+        <div class="stat"><span>既習</span><strong id="learnedCount">0</strong></div>
         <div class="stat"><span>連続</span><strong id="streakCount">0</strong></div>
         <div class="stat"><span>弱点</span><strong id="weakCount">0</strong></div>
       </div>
@@ -480,7 +481,7 @@
           </div>
         </details>
         <div class="action-stack">
-          <button class="primary" id="startBtn">20問開始</button>
+          <button class="primary" id="startBtn">50問開始</button>
           <button class="ghost" id="weakBtn">弱点だけ</button>
           <button class="ghost" id="resetBtn">リセット</button>
         </div>
@@ -978,24 +979,78 @@
       "4-2-6": ["南北問題", "UNCTAD", "ODA", "HDI", "人間の安全保障", "MDGs", "SDGs", "NGO・フェアトレード"]
     };
 
+    const STORAGE_KEY = "seikeiStudyProgressV2";
+    const storedProgress = loadProgress();
+
     const state = {
       mode: "choice",
       stage: "all",
       queue: [],
       current: null,
       locked: false,
-      ok: 0,
-      miss: 0,
-      streak: 0,
+      ok: storedProgress.stats.ok || 0,
+      miss: storedProgress.stats.miss || 0,
+      streak: storedProgress.stats.streak || 0,
       answered: 0,
-      roundLimit: 20,
-      weak: JSON.parse(localStorage.getItem("seikeiWeakMap") || "{}")
+      roundLimit: null,
+      limited: false,
+      weakOnly: false,
+      weak: storedProgress.weak,
+      learned: storedProgress.learned
     };
 
     const $ = (id) => document.getElementById(id);
 
-    function saveWeak() {
-      localStorage.setItem("seikeiWeakMap", JSON.stringify(state.weak));
+    function loadProgress() {
+      const fallback = {stats: {}, weak: {}, learned: {}};
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (saved && typeof saved === "object") {
+          return {
+            stats: saved.stats || {},
+            weak: saved.weak || {},
+            learned: saved.learned || {}
+          };
+        }
+      } catch {}
+      try {
+        fallback.weak = JSON.parse(localStorage.getItem("seikeiWeakMap") || "{}");
+      } catch {}
+      return fallback;
+    }
+
+    function saveProgress() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        stats: {ok: state.ok, miss: state.miss, streak: state.streak},
+        weak: state.weak,
+        learned: state.learned
+      }));
+    }
+
+    function progressKey(item, mode = state.mode) {
+      return `${mode}:${item.id}`;
+    }
+
+    function learnedEntry(item) {
+      return state.learned[progressKey(item)] || {seen: 0, correct: 0, wrong: 0, lastSeen: 0};
+    }
+
+    function hasSeen(item) {
+      return learnedEntry(item).seen > 0;
+    }
+
+    function weakCount(item) {
+      return state.weak[progressKey(item)] || state.weak[item.id] || 0;
+    }
+
+    function markLearned(ok) {
+      const key = progressKey(state.current);
+      const entry = state.learned[key] || {seen: 0, correct: 0, wrong: 0, lastSeen: 0};
+      entry.seen++;
+      if (ok) entry.correct++;
+      else entry.wrong++;
+      entry.lastSeen = Date.now();
+      state.learned[key] = entry;
     }
 
     function filteredCards() {
@@ -1017,9 +1072,13 @@
     }
 
     function weight(card) {
-      const weak = state.weak[card.id] || 0;
+      const weak = weakCount(card);
       const imp = card.importance === "A" ? 3 : card.importance === "B" ? 2 : 1;
-      return imp + weak * 4;
+      const learned = learnedEntry(card);
+      const unseenBoost = learned.seen ? 0 : 8;
+      const missBoost = Math.min(learned.wrong, 4) * 2;
+      const knownPenalty = learned.correct >= 3 && weak === 0 ? 1 : 0;
+      return Math.max(1, imp + unseenBoost + weak * 5 + missBoost - knownPenalty);
     }
 
     function shuffle(list) {
@@ -1031,31 +1090,51 @@
       return arr;
     }
 
-    function buildQueue(weakOnly = false) {
+    function studyPool() {
+      return state.mode === "judge" ? filteredJudgeStatements() : filteredCards();
+    }
+
+    function buildQueue(weakOnly = false, options = {}) {
+      state.limited = !!options.limited;
+      state.roundLimit = state.limited ? (options.limit || 50) : null;
+      state.weakOnly = weakOnly;
+      state.answered = 0;
+      state.queue = makeQueue(weakOnly);
+      nextQuestion();
+    }
+
+    function makeQueue(weakOnly = false) {
       let pool = state.mode === "judge" ? filteredJudgeStatements() : filteredCards();
       if (weakOnly) {
-        pool = pool.filter(item => (state.weak[item.id] || 0) > 0);
+        pool = pool.filter(item => weakCount(item) > 0);
         if (!pool.length) {
           pool = (state.mode === "judge" ? filteredJudgeStatements() : filteredCards()).filter(item => item.importance === "A");
         }
       }
+      if (!pool.length) return [];
+      const target = state.limited ? state.roundLimit : Math.max(80, pool.length);
+      const unseen = shuffle(pool.filter(item => !hasSeen(item))).sort((a, b) => importanceScore(b) - importanceScore(a));
+      const seen = pool.filter(item => hasSeen(item));
       const weighted = [];
-      pool.forEach(item => {
+      (seen.length ? seen : pool).forEach(item => {
         for (let i = 0; i < weight(item); i++) weighted.push(item);
       });
-      state.queue = shuffle(weighted).slice(0, Math.max(state.roundLimit, Math.min(35, weighted.length)));
-      state.answered = 0;
-      nextQuestion();
+      const queue = unseen.slice();
+      while (queue.length < target) {
+        queue.push(...shuffle(weighted.length ? weighted : pool));
+      }
+      return avoidImmediateRepeats(queue.slice(0, target));
     }
 
     function nextQuestion() {
-      if (state.answered >= state.roundLimit && state.mode !== "deck") {
+      if (state.limited && state.answered >= state.roundLimit && state.mode !== "deck") {
         renderResult();
         updateStats();
         return;
       }
       state.locked = false;
-      state.current = state.queue.shift() || shuffle(state.mode === "judge" ? filteredJudgeStatements() : filteredCards()).find(Boolean);
+      if (!state.queue.length) state.queue = makeQueue(state.weakOnly);
+      state.current = nextQueuedItem();
       if (!state.current) {
         renderDeck();
         return;
@@ -1063,6 +1142,36 @@
       if (state.mode === "deck") renderDeck();
       else renderQuestion();
       updateStats();
+    }
+
+    function nextQueuedItem() {
+      const item = state.queue.shift();
+      if (!item || !state.current || item.id !== state.current.id) return item;
+      const swapIndex = state.queue.findIndex(candidate => candidate.id !== item.id);
+      if (swapIndex === -1) return item;
+      const replacement = state.queue.splice(swapIndex, 1)[0];
+      state.queue.unshift(item);
+      return replacement;
+    }
+
+    function importanceScore(item) {
+      return item.importance === "A" ? 3 : item.importance === "B" ? 2 : 1;
+    }
+
+    function avoidImmediateRepeats(list) {
+      for (let i = 1; i < list.length; i++) {
+        if (list[i].id !== list[i - 1].id) continue;
+        const swapIndex = list.findIndex((item, index) => index > i && item.id !== list[i - 1].id);
+        if (swapIndex !== -1) [list[i], list[swapIndex]] = [list[swapIndex], list[i]];
+      }
+      return list;
+    }
+
+    function scheduleReview(item) {
+      const first = Math.min(4, state.queue.length);
+      state.queue.splice(first, 0, item);
+      const second = Math.min(first + 5, state.queue.length);
+      state.queue.splice(second, 0, item);
     }
 
     function wrongOptions(card) {
@@ -1111,8 +1220,8 @@
         <aside class="right-panel">
           <div class="meter">
             <b>${escapeHtml(progressTitle())}</b>
-            <div class="bar"><div class="fill" style="width:${Math.min(100, state.answered / state.roundLimit * 100)}%"></div></div>
-            <div style="margin-top:8px;color:var(--muted);font-size:13px;">${state.answered}/${state.roundLimit}問</div>
+            <div class="bar"><div class="fill" style="width:${progressPercent()}%"></div></div>
+            <div style="margin-top:8px;color:var(--muted);font-size:13px;">${escapeHtml(progressText())}</div>
           </div>
           <div class="weak-list">
             <b>いまの弱点</b>
@@ -1175,9 +1284,11 @@
       state.ok++;
       state.streak++;
       state.answered++;
-      const old = state.weak[state.current.id] || 0;
-      if (old > 0) state.weak[state.current.id] = old - 1;
-      saveWeak();
+      markLearned(true);
+      const key = progressKey(state.current);
+      const old = weakCount(state.current);
+      if (old > 0) state.weak[key] = old - 1;
+      saveProgress();
       updateStats();
     }
 
@@ -1185,9 +1296,11 @@
       state.miss++;
       state.streak = 0;
       state.answered++;
-      state.weak[state.current.id] = (state.weak[state.current.id] || 0) + 1;
-      state.queue.push(state.current, state.current);
-      saveWeak();
+      markLearned(false);
+      const key = progressKey(state.current);
+      state.weak[key] = weakCount(state.current) + 1;
+      scheduleReview(state.current);
+      saveProgress();
       updateStats();
     }
 
@@ -1211,7 +1324,7 @@
     function renderResult() {
       const total = state.ok + state.miss;
       const recentRate = total ? Math.round(state.ok / total * 100) : 0;
-      const weakNow = Object.values(state.weak).filter(v => v > 0).length;
+      const weakNow = currentModeWeakCount();
       const rank = recentRate >= 90 && weakNow <= 4 ? "S" : recentRate >= 78 ? "A" : recentRate >= 62 ? "B" : "C";
       const message = rank === "S"
         ? "重要語の定着が進んでいます。次は正誤仕分けで確認。"
@@ -1251,7 +1364,7 @@
           </div>
         </aside>
       `;
-      $("againBtn").addEventListener("click", () => buildQueue(false));
+      $("againBtn").addEventListener("click", () => buildQueue(false, {limited: true, limit: 50}));
       $("weakAgainBtn").addEventListener("click", () => buildQueue(true));
       $("judgeNextBtn").addEventListener("click", () => {
         state.mode = "judge";
@@ -1334,27 +1447,55 @@
     }
 
     function updateStats() {
+      const summary = learningSummary();
       $("okCount").textContent = state.ok;
       $("missCount").textContent = state.miss;
+      $("learnedCount").textContent = `${summary.learned}/${summary.total}`;
       $("streakCount").textContent = state.streak;
-      $("weakCount").textContent = Object.values(state.weak).filter(v => v > 0).length;
+      $("weakCount").textContent = currentModeWeakCount();
       const weak = $("weakList");
       if (weak) weak.innerHTML = weakListHtml();
     }
 
     function weakListHtml() {
-      const weakCards = cards
-        .concat(judgeStatements.map(item => ({
-          id: item.id,
-          term: item.statement.length > 26 ? item.statement.slice(0, 26) + "..." : item.statement,
-          clue: item.explain
-        })))
-        .map(card => ({card, n: state.weak[card.id] || 0}))
+      const weakCards = studyPool()
+        .map(card => ({card, n: weakCount(card)}))
         .filter(x => x.n > 0)
         .sort((a,b) => b.n - a.n)
         .slice(0, 8);
       if (!weakCards.length) return `<li>まだなし。ミスした語がここに出る。</li>`;
-      return weakCards.map(x => `<li><b>${escapeHtml(x.card.term)}</b><br>${escapeHtml(x.card.clue)} (${x.n})</li>`).join("");
+      return weakCards.map(x => `<li><b>${escapeHtml(itemTitle(x.card))}</b><br>${escapeHtml(itemClue(x.card))} (${x.n})</li>`).join("");
+    }
+
+    function currentModeWeakCount() {
+      return studyPool().filter(item => weakCount(item) > 0).length;
+    }
+
+    function learningSummary() {
+      const pool = studyPool();
+      const learned = pool.filter(item => hasSeen(item)).length;
+      return {learned, total: pool.length};
+    }
+
+    function progressPercent() {
+      if (state.limited && state.roundLimit) return Math.min(100, state.answered / state.roundLimit * 100);
+      const summary = learningSummary();
+      return summary.total ? Math.round(summary.learned / summary.total * 100) : 0;
+    }
+
+    function progressText() {
+      if (state.limited && state.roundLimit) return `${state.answered}/${state.roundLimit}問`;
+      const summary = learningSummary();
+      return `${state.answered}問 / 既習 ${summary.learned}/${summary.total}`;
+    }
+
+    function itemTitle(item) {
+      if (item.term) return item.term;
+      return item.statement.length > 26 ? item.statement.slice(0, 26) + "..." : item.statement;
+    }
+
+    function itemClue(item) {
+      return item.clue || item.explain || "";
     }
 
     function flowHtml() {
@@ -1396,11 +1537,11 @@
     }
     function escapeAttr(text) { return escapeHtml(text); }
 
-    $("startBtn").addEventListener("click", () => buildQueue(false));
+    $("startBtn").addEventListener("click", () => buildQueue(false, {limited: true, limit: 50}));
     $("weakBtn").addEventListener("click", () => buildQueue(true));
     $("resetBtn").addEventListener("click", () => {
       state.ok = 0; state.miss = 0; state.streak = 0; state.weak = {};
-      saveWeak();
+      saveProgress();
       buildQueue(false);
     });
     $("deckBtn").addEventListener("click", () => {
