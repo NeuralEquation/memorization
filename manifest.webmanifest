@@ -1,0 +1,18 @@
+{
+  "name": "政経暗記",
+  "short_name": "政経",
+  "description": "政経の暗記カードと正誤問題",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7f9",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
