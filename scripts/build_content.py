@@ -222,23 +222,6 @@ extra('S14-O1','S14','order','衆議院が不信任を可決し、内閣が解�
 extra('S10-C1','S10','calc','衆議院の法律案再可決の本会議に300人が出席。必要な賛成の最少人数は何人か。','200','出席議員300人×2/3＝200人。総議員の3分の2ではない。',formula={'kind':'fraction','n':300,'numerator':2,'denominator':3})
 extra('S19-C1','S19','calc','総議員30人の地方議会で副知事解職の議決に20人が出席。必要な同意の最少数は何人か。','15','定足要件は30×2/3＝20人で満たす。同意は出席者20×3/4＝15人。',formula={'kind':'fraction','n':20,'numerator':3,'denominator':4})
 
-data=dict(version='2026-10-10.1',examDate='2026-10-14',coverage=dict(total=180,verified=0,partial=9,unreviewed=171,reason='問題集原本・出版社解答冊子未提供。訂正報告の9問は訂正論点のみ確認。'),objectives=objectives,questions=questions)
-(ROOT/'data').mkdir(exist_ok=True)
-(ROOT/'data'/'study-data.js').write_text('window.STUDY_DATA = '+json.dumps(data,ensure_ascii=False,indent=2)+';\n',encoding='utf-8')
-
-keypath=ROOT/'private'/'政経_問題集180問_出版社解答照合済み.json'
-if keypath.exists():
-    official=json.loads(keypath.read_text(encoding='utf-8'))['official_answers']
-    partial={('38','8'):['S06'],('40','22'):['S05'],('43','4-3'):['S06','S07'],('51','7'):['S12'],('58','17'):['S27'],('60','地方8'):['S21'],('61','地方10'):['S20'],('71','12'):['S30'],('74','7'):['S03','S19']}
-    rows=[]
-    for page,items in official.items():
-        for num,answer in items.items():
-            objs=partial.get((page,num),[])
-            rows.append(dict(page=int(page),number=num,learning='／'.join(next(o['title'] for o in objectives if o['id']==id) for id in objs) or '原設問未確認のため学習要求を特定できず',appIds=[q['id'] for q in questions if q['objective'] in objs],printSections=objs,status='partial' if objs else 'unreviewed',note='訂正された論点のみ。設問全体・誤選択肢・資料読解は未確認。' if objs else '正答番号の受領のみ。番号から内容を推測していない。'))
-    assert len(rows)==180 and len({(r['page'],r['number']) for r in rows})==180
-    (ROOT/'data'/'coverage.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8')
-    with (ROOT/'coverage.csv').open('w',encoding='utf-8-sig',newline='') as f:
-        w=csv.writer(f);w.writerow(['問題集ページ','問題番号','必要な学習内容','アプリの対応問題ID','印刷教材の対応箇所','検証状態','注記'])
-        for r in rows:w.writerow([r['page'],r['number'],r['learning'],';'.join(r['appIds']),';'.join(r['printSections']),r['status'],r['note']])
-    (ROOT/'coverage.html').write_text('<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>180問対応監査</title><style>body{font-family:Meiryo,sans-serif;margin:24px}table{border-collapse:collapse;font-size:13px}td,th{border:1px solid #aaa;padding:8px;overflow-wrap:anywhere}th{background:#eee}tr{break-inside:avoid}@media print{@page{size:A4 landscape;margin:10mm}}</style><h1>問題集180問の対応監査</h1><p>完全照合 0/180。訂正論点のみ9問、内容未確認171問。正答番号の受領は要求知識の網羅を意味しません。<a href="coverage.csv">CSV</a> / <a href="index.html">学習へ</a></p><table><thead><tr>'+''.join('<th>'+s+'</th>' for s in ['ページ','番号','必要な内容','アプリID','印刷箇所','状態','注記'])+'</tr></thead><tbody>'+''.join('<tr>'+''.join('<td>'+html.escape(str(x))+'</td>' for x in [r['page'],r['number'],r['learning'],' / '.join(r['appIds']),' / '.join(r['printSections']),r['status'],r['note']])+'</tr>' for r in rows)+'</tbody></table></html>',encoding='utf-8')
-print(f'{len(objectives)} objectives, {len(questions)} original exercises')
+from build_audited_release import publish
+data=publish(ROOT,objectives,questions)
+print(f"{len(objectives)} objectives, {len(questions)} original exercises; verified 180/180")

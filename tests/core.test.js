@@ -3,18 +3,18 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const C=require('../core.js'),box={window:{}};vm.runInNewContext(fs.readFileSync('data/study-data.js','utf8'),box);const d=JSON.parse(JSON.stringify(box.window.STUDY_DATA));
 const qs=d.questions;const coverage=JSON.parse(fs.readFileSync('data/coverage.json','utf8'));
 test('schema, IDs, references and all three core tasks per objective',()=>{
- assert.equal(qs.length,108);assert.equal(d.objectives.length,32);assert.equal(new Set(qs.map(q=>q.id)).size,qs.length);
- const objs=new Set(d.objectives.map(o=>o.id));const printable=fs.readFileSync('print.html','utf8');
+ assert.equal(qs.length,238);assert.equal(d.objectives.length,68);assert.equal(new Set(qs.map(q=>q.id)).size,qs.length);
+ const objs=new Set(d.objectives.map(o=>o.id));const printable=fs.readFileSync('print-complete.html','utf8');
  for(const q of qs){assert.ok(objs.has(q.objective));for(const f of ['prompt','source','explanation','basis'])assert.ok(q[f]?.length>0,q.id+':'+f);assert.equal(q.status,'reviewed');assert.ok(printable.includes(q.id));
   if(['choice','compare','judge'].includes(q.type)){const options=q.options||q.correctionOptions;assert.equal(options.length,4);assert.equal(new Set(options.map(C.normalize)).size,4,q.id);assert.equal(q.optionReasons.length,4);}
  }
  for(const id of objs){assert.ok(qs.some(q=>q.objective===id&&q.type==='recall'));assert.ok(qs.filter(q=>q.objective===id&&q.type!=='recall').length>=2);assert.ok(printable.includes('id="'+id+'"'));}
 });
-test('180 coverage rows honest, partial only for the nine corrected questions',()=>{
+test('180 requirements mapped to explicit trained decisions and original identity key',()=>{
  assert.equal(coverage.length,180);assert.equal(new Set(coverage.map(r=>r.page+':'+r.number)).size,180);
- assert.equal(coverage.filter(r=>r.status==='partial').length,9);assert.equal(coverage.filter(r=>r.status==='unreviewed').length,171);assert.equal(coverage.filter(r=>r.status==='verified').length,0);
+ assert.equal(coverage.filter(r=>r.status==='partial').length,0);assert.equal(coverage.filter(r=>r.status==='unreviewed').length,0);assert.equal(coverage.filter(r=>r.status==='verified').length,180);
  for(const r of coverage)for(const id of r.appIds)assert.ok(qs.some(q=>q.id===id));
- const expected=['38:8','40:22','43:4-3','51:7','58:17','60:地方8','61:地方10','71:12','74:7'];assert.deepEqual(coverage.filter(r=>r.status==='partial').map(r=>r.page+':'+r.number),expected);
+ const expected=['38:8','40:22','43:4-3','51:7','58:17','60:地方8','61:地方10','71:12','74:7'];assert.ok(expected.every(k=>coverage.some(r=>r.page+':'+r.number===k)));
  const path='private/政経_問題集180問_出版社解答照合済み.json';if(fs.existsSync(path)){const official=JSON.parse(fs.readFileSync(path,'utf8')).official_answers;assert.equal(Object.keys(official).length,42);for(const r of coverage)assert.ok(official[r.page]?.[r.number]);const answers=[2,2,3,3,3,2,7,1,1];expected.forEach((k,i)=>{const [p,n]=k.split(':');assert.equal(Number(official[p][n]),answers[i]);});}
 });
 test('strict recall and numeric grading rejects short fragments and embellished answers',()=>{
@@ -59,4 +59,43 @@ test('old bank removed, no pre-answer hints, release cache includes every local 
  assert.ok(!app.includes('setTimeout(next'));assert.ok(!app.includes('seikeiStudyProgressV2'));assert.ok(!app.includes('seikeiWeakMap'));
  for(const a of ['data/study-data.js','app.js','core.js','print.html','coverage.html','sources.html'])assert.ok(sw.includes(a));
  assert.ok(!sw.includes('keys.filter(key => key !== CACHE_NAME)'));assert.ok(sw.includes("key.startsWith('seikei-midterm-202610-')"));assert.ok(!sw.includes('catch(() => caches.match'));
+});
+test('every requirement atom is actually assessed; data reasoning has applied exercises',()=>{
+ const atoms=JSON.parse(fs.readFileSync('data/coverage-atoms.json','utf8'));
+ for(const r of coverage){assert.ok(r.skills.length&&r.reasoning.length&&r.evidence.answerImages.length);
+  for(const id of r.skills){const a=atoms[id],q=qs.find(q=>q.id===a.questionId);assert.ok(a.knowledge.length>10);assert.ok(q.atomIds.includes(id));assert.ok(r.appIds.includes(q.id));assert.ok(r.printSections.includes(a.section));}
+ }
+ for(const k of ['62:地方15','68:7','70:10','71:11','72:13','76:13'])assert.ok(coverage.find(r=>r.page+':'+r.number===k).appIds.some(id=>qs.find(q=>q.id===id).table||qs.find(q=>q.id===id).charts));
+});
+test('combination options have exactly one semantically correct truth pattern',()=>{
+ for(const q of qs.filter(q=>q.id.startsWith('N')&&q.type==='recall'))assert.ok(q.explanation.includes(q.answer),q.id+' recall explanation must define the actual answer');
+ for(const q of qs.filter(q=>q.format==='combination')){
+  const truth=q.statements.map(s=>s.truth);assert.ok(truth.length>=2&&truth.length<=3);
+  const valid=q.patterns.map(p=>p.every((v,i)=>v===truth[i]));assert.equal(valid.filter(Boolean).length,1,q.id);assert.ok(valid[q.answer]);
+  assert.equal(q.atomIds.length,truth.length);assert.equal(new Set(q.patterns.map(JSON.stringify)).size,4);
+  for(const s of q.statements)assert.ok(s.text&&s.reason);
+ }
+});
+test('independent district, wasted-vote and ratio calculations from displayed source table',()=>{
+ const q=qs.find(q=>q.id==='N31-D1'),rows=q.table.rows.map(r=>r.slice(1)),total=[0,0,0],district=[0,0,0];let winners=0;
+ for(const r of rows){const winner=r.indexOf(Math.max(...r));assert.equal(r.filter(v=>v===r[winner]).length,1);district[winner]++;winners+=r[winner];r.forEach((v,i)=>total[i]+=v);}
+ assert.deepEqual(district,q.calculation.expectedDistrict);assert.deepEqual(total,[175,204,121]);const quotients=total.flatMap((v,i)=>Array.from({length:5},(_,j)=>({i,v:v/(j+1)}))).sort((a,b)=>b.v-a.v),proportional=[0,0,0];quotients.slice(0,5).forEach(x=>proportional[x.i]++);assert.deepEqual(proportional,q.calculation.expectedProportional);assert.notEqual(quotients[4].v,quotients[5].v);
+ const q2=qs.find(q=>q.id==='N31-D2');assert.equal(total.reduce((a,b)=>a+b)-winners,q2.calculation.expectedWasted);
+ const losers=rows.map((r,i)=>({i,ratio:r[1]/Math.max(...r)})).filter(x=>x.ratio<1).sort((a,b)=>a.ratio-b.ratio);assert.equal(losers[0].i,q2.calculation.expectedLowest);
+ const f=qs.find(q=>q.id==='N27-D1');assert.deepEqual(f.table.rows.filter(r=>r[1]>=50&&r[3]>r[2]).map(r=>r[0]),['乙','丙']);
+});
+test('new mastery requires every assigned judgment and data case, beyond word recall',()=>{
+ const p=C.empty(d.version),set=qs.filter(q=>q.objective==='N31'),now=1000000;
+ const done=q=>{C.record(p,q,true,now);C.record(p,q,true,now+C.INTERVAL);};
+ set.filter(q=>q.id!=='N31-D2').forEach(done);assert.ok(!C.objectiveMastered(p,'N31',qs));done(set.find(q=>q.id==='N31-D2'));assert.ok(C.objectiveMastered(p,'N31',qs));
+});
+test('unmastered priority uses eligible pending only and falls back when all are mastered',()=>{
+ const p=C.empty(d.version),set=qs.slice(0,3);assert.deepEqual(C.prioritize(set,p,'unmastered'),set);
+ for(const q of set.slice(0,2)){C.record(p,q,true,100);C.record(p,q,true,100+C.INTERVAL);}
+ assert.deepEqual(C.prioritize(set,p,'unmastered'),[set[2]]);C.record(p,set[2],true,100);C.record(p,set[2],true,100+C.INTERVAL);assert.deepEqual(C.prioritize(set,p,'unmastered'),set);assert.deepEqual(C.prioritize([],p,'unmastered'),[]);
+});
+test('strict progress import accepts exported old IDs, rejects corrupt or inconsistent data',()=>{
+ const p=C.empty(d.version);C.record(p,qs[0],false,100);C.record(p,qs[1],true,200);C.record(p,qs[1],true,200+C.INTERVAL);
+ assert.deepEqual(C.restore(JSON.stringify(p),d),p);assert.deepEqual(C.restore(JSON.stringify(C.empty(d.version)),d),C.empty(d.version));
+ for(const raw of ['{','null','[]',JSON.stringify({...p,version:'old'}),JSON.stringify({...p,turn:999}),JSON.stringify({...p,stats:{...p.stats,ok:-1}}),JSON.stringify({...p,records:{unknown:p.records[qs[0].id]}}),JSON.stringify({...p,records:{...p.records,[qs[0].id]:{...p.records[qs[0].id],lastOK:true}}})])assert.throws(()=>C.restore(raw,d));
 });

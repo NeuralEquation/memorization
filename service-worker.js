@@ -1,4 +1,4 @@
-const CACHE_NAME = "seikei-midterm-202610-2";
+const CACHE_NAME = "seikei-midterm-202610-4";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,9 +8,13 @@ const ASSETS = [
   "./core.js",
   "./app.js",
   "./print.html",
+  "./print-complete.html",
+  "./print-short.html",
   "./coverage.html",
   "./coverage.csv",
   "./data/coverage.json",
+  "./data/coverage-atoms.json",
+  "./reports/objective-delta.md",
   "./sources.html"
 ];
 

@@ -453,14 +453,15 @@
       }
     }
   .notice{background:#fff7df;border:1px solid #d9ba61;border-radius:8px;padding:12px;line-height:1.7}.notice p{margin:6px 0}h1{font-size:25px}.source,#offlineStatus,#saveStatus{font-size:12px;color:#526170;line-height:1.6}select{font:inherit;max-width:100%;width:100%;padding:10px;margin:6px 0 12px}label{display:block}.prompt{font-size:clamp(21px,2.3vw,28px);line-height:1.6}input{min-width:0}.feedback{overflow-wrap:anywhere}.main{min-width:0}a{color:#0b6059}button:focus-visible,a:focus-visible{outline:3px solid #167a73;outline-offset:3px}@media(max-width:560px){.text-answer{grid-template-columns:1fr}.badge{white-space:normal}.prompt{font-size:22px}}
-  </style>
+  .prompt{white-space:pre-line}.data-table{overflow-x:auto}.data-table table{width:100%;border-collapse:collapse;font-size:14px;margin:14px 0}.data-table td,.data-table th{border:1px solid #a4b5bc;padding:8px;text-align:center}.data-table caption,.data-caption{font-size:12px;line-height:1.5}.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.chart-grid figure{margin:8px 0}.chart-grid svg{width:100%;font-size:13px}.chart-grid figcaption{font-size:14px;font-weight:bold}@media(max-width:560px){.chart-grid{grid-template-columns:1fr}.data-table td,.data-table th{padding:6px}}
+</style>
 </head>
 <body>
   <div class="app">
     <header><h1>政経 2学期中間</h1><p>試験開始：2026年10月14日</p>
-<div class="notice"><b>資料確認済みの先行版</b><p id="scopeCount"></p>
-<p>問題集原本と出版社解答冊子はこのPCに未提供です。180問の完全網羅は未確認。訂正報告の9問は訂正論点だけを扱います。</p>
-<a href="print.html">印刷教材・問題・解説</a> / <a href="coverage.html">180問対応監査</a> / <a href="sources.html">資料と法令の確認状況</a></div>
+<div class="notice"><b>180問の要求判断を照合した更新版</b><p id="scopeCount"></p>
+<p>問題集180問の問題文・全選択肢・出版社解説を確認し、要求判断を独自演習へ対応付けました。作成者による照合であり、試験成績や学習効果を保証するものではありません。</p>
+<a href="print-complete.html">更新版教材・問題・解説</a> / <a href="print-short.html">直前10ページ</a> / <a href="print.html">旧60ページ版</a> / <a href="coverage.html">180問対応監査</a> / <a href="sources.html">資料と法令の確認状況</a></div>
 <p id="offlineStatus" role="status">オフライン準備中</p><p id="saveStatus" role="status">今回の試験の進捗をこの端末に保存します</p>
       <div class="stats" aria-label="成績">
         <div class="stat"><span>正解</span><strong id="okCount">0</strong></div>
@@ -485,13 +486,20 @@
             <div class="stage-grid" id="stageGrid"></div>
           </div>
         </details>
-        <label for="studyFilter">出題対象</label><select id="studyFilter"><option value="all">収録全問</option><option value="unmastered">未習得を優先</option><option value="weak">間違えた問題</option></select>
+        <label for="studyFilter">出題対象</label><select id="studyFilter"><option value="all">収録全問</option><option value="unmastered">未習得優先（なくなれば復習）</option><option value="weak">間違えた問題</option></select>
+<p id="filterStatus" class="source" aria-live="polite"></p>
 <label for="importance">重要度</label><select id="importance"><option value="all">すべて</option><option value="A">重要度A</option><option value="B">重要度B</option></select>
 <p class="source">A：試験直前の重点　B：理解を補う基礎</p><div class="action-stack">
           <button class="primary" id="startBtn">50問開始</button>
           <button class="ghost" id="weakBtn">弱点だけ</button>
-          <button id="reviewBtn">全範囲復習</button><button id="exportBtn">進捗のバックアップ</button><button class="ghost" id="resetBtn">今回の進捗をリセット</button>
+          <button id="reviewBtn">全範囲復習</button><button id="exportBtn">進捗のバックアップ</button><button id="importBtn" aria-controls="importPanel">進捗JSONを読み込む</button><button class="ghost" id="resetBtn">今回の進捗をリセット</button>
         </div>
+        <section id="importPanel" hidden>
+          <h3>進捗の復元</h3>
+          <label for="progressFile">今回の試験の進捗JSON</label><input id="progressFile" type="file" accept=".json,application/json" style="max-width:100%">
+          <p id="importPreview" class="source" aria-live="polite">JSONを選ぶと内容を検査します。まだ進捗は変更されません。</p>
+          <div class="action-stack"><button id="applyImport" disabled>この内容で復元する</button><button id="undoImport" disabled>復元前に戻す</button><button id="cancelImport">閉じる</button></div>
+        </section>
       </aside>
 
       <main class="main">

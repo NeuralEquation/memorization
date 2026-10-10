@@ -36,7 +36,28 @@
   }
   const mastered=(p,q)=>{const r=p.records[q.id];return !!r&&r.spaced>=2&&r.streak>=2;};
   const weak=(p,q)=>{const r=p.records[q.id];return !!r&&r.wrong>0&&!mastered(p,q);};
-  function objectiveMastered(p,id,questions){const qs=questions.filter(q=>q.objective===id);return qs.some(q=>q.type==='recall'&&mastered(p,q))&&qs.filter(q=>q.type!=='recall'&&mastered(p,q)).length>=2;}
+  function prioritize(pool,p,filter){
+    if(filter!=='unmastered')return pool;
+    const pending=pool.filter(q=>!mastered(p,q));
+    return pending.length?pending:pool;
+  }
+  function restore(raw,data){
+    let s;try{s=JSON.parse(raw);}catch{throw new Error('JSONとして読み込めません。');}
+    const object=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
+    const integer=x=>Number.isSafeInteger(x)&&x>=0;
+    if(!object(s)||s.version!==data.version)throw new Error('今回の試験用の進捗JSONではありません。');
+    if(!object(s.records)||!object(s.stats)||!integer(s.turn))throw new Error('進捗JSONの構造が不正です。');
+    const ids=new Set(data.questions.map(q=>q.id));let seen=0,correct=0,wrong=0;
+    for(const [id,r] of Object.entries(s.records)){
+      if(!ids.has(id))throw new Error('現在の教材にない問題IDが含まれています。');
+      if(!object(r)||!['seen','correct','wrong','streak','spaced','lastCredit','lastSeen','dueTurn'].every(k=>integer(r[k]))||typeof r.lastOK!=='boolean')throw new Error('問題ごとの履歴に不正な値があります。');
+      if(r.seen===0||r.seen!==r.correct+r.wrong||r.streak>r.correct||r.spaced>r.correct||r.lastCredit>r.lastSeen||r.dueTurn>s.turn+6||(!r.lastOK&&(r.streak!==0||r.spaced!==0))||(r.lastOK&&(r.streak===0||r.spaced===0)))throw new Error('正誤回数・習得履歴の整合性を確認できません。');
+      seen+=r.seen;correct+=r.correct;wrong+=r.wrong;
+    }
+    if(!['ok','miss','streak'].every(k=>integer(s.stats[k]))||seen!==s.turn||correct!==s.stats.ok||wrong!==s.stats.miss||s.stats.streak>s.stats.ok)throw new Error('合計と問題ごとの履歴が一致しません。');
+    return read(raw,data);
+  }
+  function objectiveMastered(p,id,questions){const qs=questions.filter(q=>q.objective===id),required=qs.filter(q=>q.requiredForMastery);return qs.some(q=>q.type==='recall'&&mastered(p,q))&&(required.length?required.every(q=>mastered(p,q)):qs.filter(q=>q.type!=='recall'&&mastered(p,q)).length>=2);}
   function choose(pool,p,current,random=Math.random){
     if(!pool.length)return null;
     let options=pool.filter(q=>q.id!==current);if(!options.length)options=pool;
@@ -45,5 +66,5 @@
     const ranked=options.map(q=>{const r=p.records[q.id];return {q,score:(!r?500:!r.lastOK?1000:!mastered(p,q)?200:0)+(q.importance==='A'?20:0)+random()*10};});
     ranked.sort((a,b)=>b.score-a.score);return ranked[0].q;
   }
-  return {normalize,grade,empty,read,record,mastered,weak,objectiveMastered,choose,INTERVAL};
+  return {normalize,grade,empty,read,restore,prioritize,record,mastered,weak,objectiveMastered,choose,INTERVAL};
 });

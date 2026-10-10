@@ -1,0 +1,57 @@
+{
+  "node": {
+    "passed": 15,
+    "failed": 0
+  },
+  "browser": {
+    "passed": 15,
+    "checks": [
+      "initial shell, old bank isolation and offline preparation",
+      "recall rejects fragments; feedback waits for next; reload preserves progress",
+      "weak-only, unknown, empty filter and full review",
+      "choice scoring and double-submit protection",
+      "judge needs verdict plus correction, including incorrect reason",
+      "order input and numeric calculation",
+      "unit and importance filters, responsive 360px without horizontal overflow",
+      "50-question round completes while delayed mistakes do not starve new questions",
+      "offline reload plus print and coverage and missing assets",
+      "progress export, validated preview, cancel, restore, reload and undo",
+      "unmastered priority and mastered fallback agree with their visible status",
+      "every new chart/table renders and grades at 360px, without leaking feedback",
+      "short print is ten A4 sheets with no internal overflow",
+      "isolated reset clears new state while preserving old exam key",
+      "upgrade actual 108-question v2 release atomically, preserve progress and unrelated cache"
+    ],
+    "errors": []
+  },
+  "pdf": {
+    "complete": {
+      "pages": 140,
+      "a4": true,
+      "blankPages": [],
+      "outsidePages": [],
+      "missingQuestionIds": []
+    },
+    "short": {
+      "pages": 10,
+      "a4": true,
+      "blankPages": [],
+      "outsidePages": [],
+      "missingQuestionIds": []
+    },
+    "preserved60PagePdf": {
+      "sha256": "4b513431f4d6d8c6b98dd0935b4453444fd897adb14fafb11c21a02c98e47131",
+      "pages": 60
+    }
+  },
+  "content": {
+    "workbookQuestions": 180,
+    "verified": 180,
+    "partial": 0,
+    "unreviewed": 0,
+    "learningObjectives": 68,
+    "originalExercises": 238,
+    "requirementAtoms": 218,
+    "combinationQuestions": 83
+  }
+}

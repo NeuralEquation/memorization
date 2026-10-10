@@ -11,4 +11,7 @@ node_modules/
 *.wav
 *.pdf
 !output/pdf/seikei-midterm-202610.pdf
+!output/pdf/seikei-midterm-202610-complete.pdf
+!output/pdf/seikei-midterm-202610-short.pdf
+__pycache__/
 tmp_extract.py
