@@ -1,0 +1,14 @@
+private/
+tmp/
+test-results/
+node_modules/
+*.zip
+*.jpg
+*.jpeg
+*.png
+*.m4a
+*.mp3
+*.wav
+*.pdf
+!output/pdf/seikei-midterm-202610.pdf
+tmp_extract.py
