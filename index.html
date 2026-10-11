@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#176b52"><meta name="description" content="政経2学期中間試験の学習アプリ。238問の演習と、直前10ページの復習教材。">
-<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icons/icon.svg"><link rel="stylesheet" href="./styles.css">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icons/icon.svg"><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./quests.css">
 <title>政経 2学期中間 2026年10月</title>
 </head>
 <body>
@@ -12,6 +12,7 @@
  <aside class="sidebar">
   <a class="brand" href="./"><span class="brand-mark">政</span><span>政経ノート<small>2学期 中間試験</small></span></a>
   <nav class="main-nav" aria-label="メインメニュー">
+   <button class="nav-btn" data-view="quest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 21V3m0 1c5-4 9 4 14 0v10c-5 4-9-4-14 0"/></svg><span>クエスト</span></button>
    <button class="nav-btn" data-view="study" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="m8 9 2 2 5-5M8 16h8"/></svg><span>演習</span></button>
    <button class="nav-btn" data-view="library" id="deckBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v16M3 3c4-1 6 0 9 2 3-2 5-3 9-2v15c-4-1-6 0-9 2-3-2-5-3-9-2Z"/></svg><span>解説</span></button>
    <button class="nav-btn" data-view="materials"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 3h8l4 4v14H7ZM15 3v5h4M3 7v14M10 12h6M10 16h6"/></svg><span>教材</span></button>
@@ -21,6 +22,7 @@
  </aside>
  <main class="workspace" id="mainContent" tabindex="-1"><div class="workspace-inner">
   <div class="mobile-brand"><span><span class="brand-mark">政</span>政経ノート</span><small>2学期中間 · 10/14から</small></div>
+  <section id="questView" hidden aria-label="クエスト学習"><div id="questContent"></div></section>
   <section id="studyView" aria-labelledby="studyTitle">
    <header class="page-head"><div><p class="eyebrow">PRACTICE</p><h1 id="studyTitle">一問ずつ、確実に。</h1><p id="sessionLabel">全範囲から、語句と判断を練習</p></div><div class="page-actions"><button id="filterBtn" class="icon-button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="white"/><circle cx="15" cy="17" r="3" fill="white"/></svg>出題設定</button></div></header>
    <div class="study-strip"><div id="filterSummary" class="filter-summary"></div><button id="startBtn">50問チャレンジ →</button></div>
@@ -44,6 +46,7 @@
   </section>
   <section id="progressView" hidden aria-labelledby="progressTitle">
    <header class="page-head"><div><p class="eyebrow">YOUR PROGRESS</p><h1 id="progressTitle">学習の積み重ね</h1><p>苦手を見つけて、次の一問へ。</p></div></header>
+   <p class="source">この画面は通常演習の記録です。クエストの到達・定着は「クエスト」のマップで確認できます。</p>
    <div class="progress-overview"><h2 id="masteryHeadline">68テーマを少しずつ</h2><p id="masteryCaption"></p><div class="progress-track"><span id="masteryFill"></span></div></div>
    <div class="stats" aria-label="成績"><div class="stat"><span>正解</span><strong id="okCount">0</strong></div><div class="stat"><span>ミス</span><strong id="missCount">0</strong></div><div class="stat"><span>目標習得</span><strong id="learnedCount">0</strong></div><div class="stat"><span>連続正解</span><strong id="streakCount">0</strong></div><div class="stat"><span>未克服の弱点</span><strong id="weakCount">0</strong></div></div>
    <div class="action-stack"><button id="weakBtn" class="primary">弱点を復習する</button><button id="reviewBtn">全範囲を復習する</button></div>
@@ -66,5 +69,5 @@
   <p id="filterMatch" class="source"></p>
  </div><div class="dialog-foot"><button class="primary" id="applyFilters">この設定で学習する</button></div>
 </dialog>
-<script src="./data/study-data.js"></script><script src="./core.js"></script><script src="./app.js"></script>
+<script src="./data/study-data.js"></script><script src="./core.js"></script><script src="./app.js"></script><script src="./data/quests.js"></script><script src="./quest-core.js"></script><script src="./quest-app.js"></script>
 </body></html>

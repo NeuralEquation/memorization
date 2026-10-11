@@ -11,9 +11,9 @@ let activeView='study',draftFilters=null;
 const viewScroll={};
 function showView(view){
  viewScroll[activeView]=scrollY;activeView=view;
- for(const name of ['study','library','materials','progress'])$(name+'View').hidden=name!==view;
+ for(const name of ['quest','study','library','materials','progress'])$(name+'View').hidden=name!==view;
  document.querySelectorAll('[data-view]').forEach(b=>{if(b.dataset.view===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
- if(view==='library')deck();if(view==='progress')stats();
+ if(view==='library')deck();if(view==='progress')stats();if(view==='quest')window.QuestUI?.show();
  window.scrollTo({top:viewScroll[view]||0,behavior:'instant'});
 }
 function filterPreview(){

@@ -16,7 +16,7 @@ async function settings(field,value){
 }
 async function progressAction(id){await page.locator('[data-view="progress"]').click();if(id==='resetBtn')await page.locator('#resetBtn').locator('..').locator('summary').click();await page.locator('#'+id).click();}
 
-await page.goto(url);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);await page.waitForSelector('.prompt');
+await page.goto(url+"/?mode=practice");await page.waitForFunction(()=>!!navigator.serviceWorker.controller);await page.waitForSelector('.prompt');
 await run('initial shell, old bank isolation and offline preparation',async()=>{
  assert.match(await page.title(),/2学期中間/);assert.match(await page.locator('#scopeCount').textContent(),/238問/);assert.match(await page.locator('#offlineStatus').textContent(),/準備ができました/);
  assert.equal(await page.locator('.hint').count(),0);assert.equal(await page.locator('.question-body .source:visible').count(),0); // no answer/source hints before answering
@@ -96,7 +96,7 @@ await run('offline reload plus print and coverage and missing assets',async()=>{
  await ctx.setOffline(true);await page.reload();assert.ok(await page.locator('.prompt').isVisible());await page.locator('#unknown').click();assert.ok(await page.locator('#nextBtn').isVisible());
  await page.goto(url+'/print-complete.html');assert.equal(await page.locator('.objective').count(),68);await page.goto(url+'/coverage.html');assert.equal(await page.locator('tbody tr').count(),180);
  const missing=await page.evaluate(async()=>{const r=await fetch('./not-a-real-module.js');return {status:r.status,type:r.headers.get('content-type')};});assert.equal(missing.status,503);assert.match(missing.type,/text\/plain/);
- await ctx.setOffline(false);await page.goto(url);assert.equal(errors.length,0,errors.join('\n'));
+ await ctx.setOffline(false);await page.goto(url+"/?mode=practice");assert.equal(errors.length,0,errors.join('\n'));
 });
 await run('progress export, validated preview, cancel, restore, reload and undo',async()=>{
  const exported=await page.evaluate(()=>JSON.stringify(progress));const oldTurns=JSON.parse(exported).turn;
@@ -124,7 +124,7 @@ await run('every new chart/table renders and grades at 360px, without leaking fe
 });
 await run('short print is ten A4 sheets with no internal overflow',async()=>{
  await page.goto(url+'/print-short.html');await page.emulateMedia({media:'print'});assert.equal(await page.locator('.sheet').count(),10);
- const over=await page.locator('.sheet').evaluateAll(es=>es.map((e,i)=>({page:i+1,overflow:e.scrollHeight-e.clientHeight})).filter(x=>x.overflow>2));assert.deepEqual(over,[]);await page.emulateMedia({media:'screen'});await page.goto(url);
+ const over=await page.locator('.sheet').evaluateAll(es=>es.map((e,i)=>({page:i+1,overflow:e.scrollHeight-e.clientHeight})).filter(x=>x.overflow>2));assert.deepEqual(over,[]);await page.emulateMedia({media:'screen'});await page.goto(url+"/?mode=practice");
 });
 await run('isolated reset clears new state while preserving old exam key',async()=>{
  page.once('dialog',dialog=>dialog.accept());await progressAction('resetBtn');assert.equal(await page.locator('#missCount').textContent(),'0');assert.equal(await page.locator('#weakCount').textContent(),'0');
@@ -132,23 +132,23 @@ await run('isolated reset clears new state while preserving old exam key',async(
 });
 await ctx.close();
 // Real service-worker upgrade in a separate origin, starting with a minimal old release.
-await run('upgrade actual previous 238-question layout and cache v4, preserve progress and unrelated cache',async()=>{
+await run('upgrade actual previous 238-question layout and cache v5, preserve progress and unrelated cache',async()=>{
  let legacy=true;
- const {execFileSync}=require('node:child_process'),oldRef='6d1057e4413219a7811889b74fc297f0b6e6b37d';
- const oldFiles=new Map();for(const file of ['index.html','manifest.webmanifest','icons/icon.svg','data/study-data.js','core.js','app.js','print.html','coverage.html','coverage.csv','data/coverage.json','data/coverage-atoms.json','reports/objective-delta.md','print-complete.html','print-short.html','sources.html','service-worker.js'])oldFiles.set('/'+file,execFileSync('git',['show',oldRef+':'+file],{cwd:root}));oldFiles.set('/',oldFiles.get('/index.html'));
+ const {execFileSync}=require('node:child_process'),oldRef='fef0f25feec0261ee7010952db3b958eb72da441';
+ const oldFiles=new Map();for(const file of ['index.html','styles.css','manifest.webmanifest','icons/icon.svg','data/study-data.js','core.js','app.js','print.html','coverage.html','coverage.csv','data/coverage.json','data/coverage-atoms.json','reports/objective-delta.md','print-complete.html','print-short.html','sources.html','service-worker.js'])oldFiles.set('/'+file,execFileSync('git',['show',oldRef+':'+file],{cwd:root}));oldFiles.set('/',oldFiles.get('/index.html'));
  const server=http.createServer((req,res)=>{
   const pathname=new URL(req.url,'http://localhost').pathname;
-  if(legacy){res.setHeader('Content-Type',pathname.endsWith('.js')?'text/javascript':pathname.endsWith('.svg')?'image/svg+xml':pathname.endsWith('.json')||pathname.endsWith('.webmanifest')?'application/json':'text/html');if(oldFiles.has(pathname))res.end(oldFiles.get(pathname));else{res.statusCode=404;res.end('not found');}return;}
+  if(legacy){res.setHeader('Content-Type',pathname.endsWith('.css')?'text/css':pathname.endsWith('.js')?'text/javascript':pathname.endsWith('.svg')?'image/svg+xml':pathname.endsWith('.json')||pathname.endsWith('.webmanifest')?'application/json':'text/html');if(oldFiles.has(pathname))res.end(oldFiles.get(pathname));else{res.statusCode=404;res.end('not found');}return;}
   const p=path.join(root,pathname==='/'?'index.html':pathname);try{res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type',p.endsWith('.css')?'text/css':p.endsWith('.js')?'text/javascript':p.endsWith('.json')?'application/json':p.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end('not found');}
  });
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  const upgrade=await browser.newContext(),p=await upgrade.newPage();try{
- await p.goto(base);await p.waitForFunction(()=>!!navigator.serviceWorker.controller);await p.waitForSelector('.prompt');assert.match(await p.locator('#scopeCount').textContent(),/238問/);
+ await p.goto(base+"/?mode=practice");await p.waitForFunction(()=>!!navigator.serviceWorker.controller);await p.waitForSelector('.prompt');assert.match(await p.locator('#scopeCount').textContent(),/238問/);
  await p.locator('#unknown').click();await p.evaluate(()=>caches.open('unrelated-app-cache').then(c=>c.put('/keep',new Response('keep'))));
  legacy=false;await p.evaluate(async()=>{const reg=await navigator.serviceWorker.getRegistration();await reg.update();});
- await p.waitForFunction(async()=>!(await caches.keys()).includes('seikei-midterm-202610-4'));
+ await p.waitForFunction(async()=>!(await caches.keys()).includes('seikei-midterm-202610-5'));
  await p.reload();await p.waitForSelector('.prompt');assert.match(await p.locator('#scopeCount').textContent(),/238問/);assert.equal(await p.locator('#missCount').textContent(),'1');assert.ok((await p.evaluate(()=>caches.keys())).includes('unrelated-app-cache'));
- await upgrade.setOffline(true);await p.reload();await p.waitForSelector('.prompt');assert.equal(await p.locator('[data-view]').count(),4);assert.ok((await p.evaluate(()=>caches.keys())).includes('seikei-midterm-202610-5'));assert.match(await p.locator('.app-shell').evaluate(e=>getComputedStyle(e).display),/grid/);
+ await upgrade.setOffline(true);await p.reload();await p.waitForSelector('.prompt');assert.equal(await p.locator('[data-view]').count(),5);assert.ok((await p.evaluate(()=>caches.keys())).includes('seikei-midterm-202610-6'));assert.match(await p.locator('.app-shell').evaluate(e=>getComputedStyle(e).display),/grid/);
  }finally{await upgrade.close();await new Promise(r=>server.close(r));}
 });
 fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify({passed:checks.length,checks,errors},null,2));

@@ -1,13 +1,18 @@
-const CACHE_NAME = "seikei-midterm-202610-5";
+const CACHE_NAME = "seikei-midterm-202610-6";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
+  "./quests.css",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./data/study-data.js",
   "./core.js",
   "./app.js",
+  "./data/quests.js",
+  "./quest-core.js",
+  "./quest-app.js",
+  "./reports/quest-coverage.json",
   "./print.html",
   "./print-complete.html",
   "./print-short.html",
@@ -41,7 +46,7 @@ self.addEventListener("fetch", event => {
   // Immutable release: never combine a new network script with an older shell.
   // Missing assets return their actual error, never HTML in place of JavaScript.
   event.respondWith(
-    caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then(cached => {
+    caches.open(CACHE_NAME).then(cache => cache.match(event.request, {ignoreSearch: event.request.mode === 'navigate'})).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
         return response;

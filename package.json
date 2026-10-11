@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "devDependencies": { "playwright": "1.62.1" },
   "scripts": {
-    "test": "node --test tests/core.test.js",
+    "test": "node --test tests/core.test.js tests/quest.test.js",
+    "test:quest-browser": "node tests/quest-browser.cjs",
     "test:browser": "node tests/browser.cjs",
     "serve": "python -m http.server 8769 --bind 127.0.0.1"
   }
