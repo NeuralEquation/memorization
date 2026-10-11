@@ -1,518 +1,70 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0f766e">
-  <meta name="description" content="2026年10月14日試験向け・確認済み論点の独自演習">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icons/icon.svg">
-  <title>政経 2学期中間 2026年10月</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --ink: #17212b;
-      --muted: #667482;
-      --line: #d7dee6;
-      --panel: #ffffff;
-      --bg: #eef2f6;
-      --accent: #0f766e;
-      --accent-dark: #0b4f4b;
-      --danger: #b42318;
-      --danger-bg: #fff0ee;
-      --warn: #a15c00;
-      --warn-bg: #fff7df;
-      --ok: #166534;
-      --ok-bg: #edf9ef;
-      --blue: #1d4ed8;
-      --blue-bg: #eef5ff;
-      --shadow: 0 10px 26px rgba(23, 33, 43, .08);
-    }
-
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui, sans-serif;
-      color: var(--ink);
-      background: var(--bg);
-    }
-
-    button, input { font: inherit; }
-    button {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      color: var(--ink);
-      border-radius: 8px;
-      cursor: pointer;
-      min-height: 42px;
-      transition: transform .08s ease, border-color .15s ease, background .15s ease, color .15s ease;
-    }
-    button:hover { border-color: #98a7b6; background: #f8fafc; }
-    button:active { transform: translateY(1px); }
-    button.primary {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-      font-weight: 700;
-    }
-    button.ghost { background: transparent; }
-    button.selected {
-      border-color: var(--accent);
-      box-shadow: inset 3px 0 0 var(--accent);
-      background: #eefaf7;
-      color: #0b4f4b;
-    }
-    button.correct { background: var(--ok-bg); border-color: #8ccc9a; }
-    button.wrong { background: var(--danger-bg); border-color: #ef9a91; }
-    button:disabled { cursor: default; opacity: .7; }
-
-    .app {
-      width: min(1180px, 100%);
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    header { padding: 0 0 12px; }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(72px, 1fr));
-      gap: 8px;
-      width: min(520px, 100%);
-    }
-    .stat {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-    .stat span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .stat strong {
-      display: block;
-      font-size: 20px;
-      margin-top: 2px;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-    .side, .main {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-    }
-    .side { padding: 14px; position: sticky; top: 16px; }
-    .main { min-height: 620px; overflow: hidden; }
-
-    details.control-panel {
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      margin-bottom: 16px;
-      overflow: hidden;
-    }
-    details.control-panel summary {
-      min-height: 0;
-      padding: 0 0 8px;
-      cursor: default;
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: .04em;
-      color: var(--muted);
-      list-style: none;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    details.control-panel summary::-webkit-details-marker { display: none; }
-    details.control-panel summary::after { content: ""; }
-    .control-body {
-      border-top: 0;
-      padding: 0;
-    }
-    .section-title {
-      margin: 14px 0 8px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .08em;
-    }
-    .mode-grid, .stage-grid {
-      display: grid;
-      gap: 8px;
-    }
-    .mode-grid button, .stage-grid button {
-      width: 100%;
-      text-align: left;
-      padding: 10px 11px;
-      line-height: 1.35;
-      background: #fbfcfd;
-    }
-    .mode-grid small, .stage-grid small {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 2px;
-    }
-    .action-stack {
-      display: grid;
-      gap: 8px;
-    }
-    .action-stack button {
-      width: 100%;
-    }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      padding: 14px;
-      border-bottom: 1px solid var(--line);
-      background: #ffffff;
-    }
-    .toolbar input {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px 12px;
-      min-height: 42px;
-      background: #f8fafc;
-    }
-    .toolbar input:focus {
-      outline: 2px solid rgba(15, 118, 110, .22);
-      border-color: var(--accent);
-      background: white;
-    }
-
-    .arena {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 250px;
-      gap: 16px;
-      padding: 16px;
-    }
-    .question-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: white;
-      min-height: 470px;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      overflow: hidden;
-    }
-    .question-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      background: #fbfcfd;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 26px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: var(--blue-bg);
-      color: var(--blue);
-      border: 1px solid #c7dbff;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .badge.a { background: #fff1f2; color: #be123c; border-color: #fecdd3; }
-    .badge.b { background: #fffbeb; color: #a15c00; border-color: #fde68a; }
-    .badge.c { background: #eef5ff; color: #1d4ed8; border-color: #bfdbfe; }
-    .question-body { padding: 18px; }
-    .prompt-label {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-    .prompt {
-      font-size: clamp(24px, 4vw, 40px);
-      line-height: 1.22;
-      font-weight: 800;
-      margin: 0 0 14px;
-      letter-spacing: 0;
-    }
-    .hint {
-      color: var(--muted);
-      line-height: 1.7;
-      border-left: 3px solid #9fd5cf;
-      padding: 4px 0 4px 10px;
-      margin: 12px 0 0;
-    }
-    .choices {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 18px;
-    }
-    .choices button {
-      min-height: 72px;
-      padding: 13px 14px;
-      text-align: left;
-      line-height: 1.45;
-      font-weight: 700;
-    }
-    .text-answer {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      margin-top: 18px;
-    }
-    .text-answer input {
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      min-height: 48px;
-      padding: 10px 12px;
-      font-size: 18px;
-    }
-    .feedback {
-      border-top: 1px solid var(--line);
-      padding: 13px 14px;
-      min-height: 76px;
-      line-height: 1.6;
-      background: #fbfcfd;
-    }
-    .feedback.ok { background: var(--ok-bg); color: var(--ok); }
-    .feedback.bad { background: var(--danger-bg); color: var(--danger); }
-    .feedback b { color: inherit; }
-
-    .right-panel {
-      display: grid;
-      gap: 10px;
-    }
-    .meter, .weak-list, .flow-box {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
-      background: white;
-    }
-    .meter .bar {
-      height: 12px;
-      border-radius: 999px;
-      background: #edf1f4;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    .meter .fill {
-      height: 100%;
-      width: 0%;
-      background: #0f766e;
-      transition: width .25s ease;
-    }
-    .weak-list ul {
-      margin: 8px 0 0;
-      padding: 0;
-      list-style: none;
-      max-height: 220px;
-      overflow: auto;
-    }
-    .weak-list li {
-      border-top: 1px solid #eef2f5;
-      padding: 7px 0;
-      font-size: 13px;
-      line-height: 1.35;
-    }
-    .flow-box ol {
-      margin: 8px 0 0;
-      padding-left: 21px;
-      line-height: 1.7;
-    }
-
-    .deck-view {
-      padding: 16px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 10px;
-    }
-    .mini-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: white;
-      padding: 12px;
-      min-height: 130px;
-    }
-    .mini-card h3 {
-      margin: 0 0 8px;
-      font-size: 18px;
-      line-height: 1.3;
-    }
-    .mini-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.55;
-      font-size: 14px;
-    }
-
-    @media (min-width: 901px) {
-      details.control-panel summary {
-        pointer-events: none;
-      }
-    }
-
-    @media (max-width: 900px) {
-      header, .layout, .arena {
-        grid-template-columns: 1fr;
-      }
-      .app { padding: 10px; }
-      .side {
-        position: static;
-        padding: 10px;
-        box-shadow: none;
-      }
-      details.control-panel {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: white;
-        margin-bottom: 8px;
-      }
-      details.control-panel summary {
-        min-height: 44px;
-        padding: 11px 12px;
-        cursor: pointer;
-        letter-spacing: .04em;
-      }
-      details.control-panel summary::after {
-        content: "+";
-        font-size: 18px;
-        color: var(--ink);
-        line-height: 1;
-      }
-      details.control-panel[open] summary::after { content: "-"; }
-      .control-body {
-        border-top: 1px solid var(--line);
-        padding: 10px;
-      }
-      .toolbar { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: repeat(5, minmax(0,1fr)); min-width: 0; }
-      .choices { grid-template-columns: 1fr; }
-      .main { min-height: auto; }
-      .question-card { min-height: 0; }
-    }
-    @media (max-width: 560px) {
-      body {
-        background: var(--bg);
-      }
-      .stats {
-        grid-template-columns: repeat(5, minmax(0,1fr));
-        gap: 6px;
-      }
-      .stat {
-        padding: 7px 6px;
-        text-align: center;
-      }
-      .stat span { font-size: 11px; }
-      .stat strong { font-size: 18px; }
-      .mode-grid button, .stage-grid button {
-        min-height: 46px;
-        padding: 9px 10px;
-      }
-      .mode-grid small, .stage-grid small { display: none; }
-      .toolbar {
-        padding: 10px;
-      }
-      .arena {
-        gap: 10px;
-        padding: 10px;
-      }
-      .question-top,
-      .question-body,
-      .feedback {
-        padding-left: 12px;
-        padding-right: 12px;
-      }
-      .prompt {
-        font-size: 28px;
-        line-height: 1.26;
-      }
-      .choices button {
-        min-height: 58px;
-        padding: 10px;
-      }
-      .right-panel {
-        display: none;
-      }
-        .deck-view {
-        padding: 10px;
-        grid-template-columns: 1fr;
-      }
-    }
-  .notice{background:#fff7df;border:1px solid #d9ba61;border-radius:8px;padding:12px;line-height:1.7}.notice p{margin:6px 0}h1{font-size:25px}.source,#offlineStatus,#saveStatus{font-size:12px;color:#526170;line-height:1.6}select{font:inherit;max-width:100%;width:100%;padding:10px;margin:6px 0 12px}label{display:block}.prompt{font-size:clamp(21px,2.3vw,28px);line-height:1.6}input{min-width:0}.feedback{overflow-wrap:anywhere}.main{min-width:0}a{color:#0b6059}button:focus-visible,a:focus-visible{outline:3px solid #167a73;outline-offset:3px}@media(max-width:560px){.text-answer{grid-template-columns:1fr}.badge{white-space:normal}.prompt{font-size:22px}}
-  .prompt{white-space:pre-line}.data-table{overflow-x:auto}.data-table table{width:100%;border-collapse:collapse;font-size:14px;margin:14px 0}.data-table td,.data-table th{border:1px solid #a4b5bc;padding:8px;text-align:center}.data-table caption,.data-caption{font-size:12px;line-height:1.5}.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.chart-grid figure{margin:8px 0}.chart-grid svg{width:100%;font-size:13px}.chart-grid figcaption{font-size:14px;font-weight:bold}@media(max-width:560px){.chart-grid{grid-template-columns:1fr}.data-table td,.data-table th{padding:6px}}
-</style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#176b52"><meta name="description" content="政経2学期中間試験の学習アプリ。238問の演習と、直前10ページの復習教材。">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icons/icon.svg"><link rel="stylesheet" href="./styles.css">
+<title>政経 2学期中間 2026年10月</title>
 </head>
 <body>
-  <div class="app">
-    <header><h1>政経 2学期中間</h1><p>試験開始：2026年10月14日</p>
-<div class="notice"><b>180問の要求判断を照合した更新版</b><p id="scopeCount"></p>
-<p>問題集180問の問題文・全選択肢・出版社解説を確認し、要求判断を独自演習へ対応付けました。作成者による照合であり、試験成績や学習効果を保証するものではありません。</p>
-<a href="print-complete.html">更新版教材・問題・解説</a> / <a href="print-short.html">直前10ページ</a> / <a href="print.html">旧60ページ版</a> / <a href="coverage.html">180問対応監査</a> / <a href="sources.html">資料と法令の確認状況</a></div>
-<p id="offlineStatus" role="status">オフライン準備中</p><p id="saveStatus" role="status">今回の試験の進捗をこの端末に保存します</p>
-      <div class="stats" aria-label="成績">
-        <div class="stat"><span>正解</span><strong id="okCount">0</strong></div>
-        <div class="stat"><span>ミス</span><strong id="missCount">0</strong></div>
-        <div class="stat"><span>目標習得</span><strong id="learnedCount">0</strong></div>
-        <div class="stat"><span>連続</span><strong id="streakCount">0</strong></div>
-        <div class="stat"><span>弱点</span><strong id="weakCount">0</strong></div>
-      </div>
-    </header>
-
-    <div class="layout">
-      <aside class="side">
-        <details class="control-panel" id="modePanel">
-          <summary>出題形式</summary>
-          <div class="control-body">
-            <div class="mode-grid" id="modeGrid"></div>
-          </div>
-        </details>
-        <details class="control-panel" id="stagePanel">
-          <summary>学習単元</summary>
-          <div class="control-body">
-            <div class="stage-grid" id="stageGrid"></div>
-          </div>
-        </details>
-        <label for="studyFilter">出題対象</label><select id="studyFilter"><option value="all">収録全問</option><option value="unmastered">未習得優先（なくなれば復習）</option><option value="weak">間違えた問題</option></select>
-<p id="filterStatus" class="source" aria-live="polite"></p>
-<label for="importance">重要度</label><select id="importance"><option value="all">すべて</option><option value="A">重要度A</option><option value="B">重要度B</option></select>
-<p class="source">A：試験直前の重点　B：理解を補う基礎</p><div class="action-stack">
-          <button class="primary" id="startBtn">50問開始</button>
-          <button class="ghost" id="weakBtn">弱点だけ</button>
-          <button id="reviewBtn">全範囲復習</button><button id="exportBtn">進捗のバックアップ</button><button id="importBtn" aria-controls="importPanel">進捗JSONを読み込む</button><button class="ghost" id="resetBtn">今回の進捗をリセット</button>
-        </div>
-        <section id="importPanel" hidden>
-          <h3>進捗の復元</h3>
-          <label for="progressFile">今回の試験の進捗JSON</label><input id="progressFile" type="file" accept=".json,application/json" style="max-width:100%">
-          <p id="importPreview" class="source" aria-live="polite">JSONを選ぶと内容を検査します。まだ進捗は変更されません。</p>
-          <div class="action-stack"><button id="applyImport" disabled>この内容で復元する</button><button id="undoImport" disabled>復元前に戻す</button><button id="cancelImport">閉じる</button></div>
-        </section>
-      </aside>
-
-      <main class="main">
-        <div class="toolbar">
-          <input id="searchInput" type="search" placeholder="解説を検索（解説一覧に切り替わります）">
-          <button id="deckBtn">解説一覧</button>
-        </div>
-        <div id="gameArea" class="arena"></div>
-      </main>
-    </div>
-  </div>
-
-  <script src="./data/study-data.js"></script>
-  <script src="./core.js"></script>
-  <script src="./app.js"></script>
+<a class="skip-link" href="#mainContent">学習内容へ</a>
+<div class="app-shell">
+ <aside class="sidebar">
+  <a class="brand" href="./"><span class="brand-mark">政</span><span>政経ノート<small>2学期 中間試験</small></span></a>
+  <nav class="main-nav" aria-label="メインメニュー">
+   <button class="nav-btn" data-view="study" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="m8 9 2 2 5-5M8 16h8"/></svg><span>演習</span></button>
+   <button class="nav-btn" data-view="library" id="deckBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v16M3 3c4-1 6 0 9 2 3-2 5-3 9-2v15c-4-1-6 0-9 2-3-2-5-3-9-2Z"/></svg><span>解説</span></button>
+   <button class="nav-btn" data-view="materials"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 3h8l4 4v14H7ZM15 3v5h4M3 7v14M10 12h6M10 16h6"/></svg><span>教材</span></button>
+   <button class="nav-btn" data-view="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 20V12M12 20V4M20 20V8" stroke-linecap="round"/></svg><span>進捗</span></button>
+  </nav>
+  <div class="sidebar-foot"><div class="exam-date">試験開始<strong>10.14 <small>WED / 2026</small></strong></div><p id="offlineStatus" role="status">オフライン準備中</p></div>
+ </aside>
+ <main class="workspace" id="mainContent" tabindex="-1"><div class="workspace-inner">
+  <div class="mobile-brand"><span><span class="brand-mark">政</span>政経ノート</span><small>2学期中間 · 10/14から</small></div>
+  <section id="studyView" aria-labelledby="studyTitle">
+   <header class="page-head"><div><p class="eyebrow">PRACTICE</p><h1 id="studyTitle">一問ずつ、確実に。</h1><p id="sessionLabel">全範囲から、語句と判断を練習</p></div><div class="page-actions"><button id="filterBtn" class="icon-button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="white"/><circle cx="15" cy="17" r="3" fill="white"/></svg>出題設定</button></div></header>
+   <div class="study-strip"><div id="filterSummary" class="filter-summary"></div><button id="startBtn">50問チャレンジ →</button></div>
+   <div id="sessionProgress" class="session-progress" hidden><span id="sessionFill"></span></div>
+   <div id="gameArea" class="arena"></div>
+   <footer class="session-foot"><p id="sessionStats"></p><p id="saveStatus" role="status">進捗はこの端末に自動保存</p></footer>
+  </section>
+  <section id="libraryView" hidden aria-labelledby="libraryTitle">
+   <header class="page-head"><div><p class="eyebrow">REFERENCE</p><h1 id="libraryTitle">解説で理解する</h1><p>気になるテーマを開いて、知識を整理。</p></div></header>
+   <div class="toolbar"><label class="sr-only" for="searchInput">解説を検索</label><input id="searchInput" type="search" placeholder="キーワードで検索"><label class="sr-only" for="libraryUnit">解説の単元</label><select id="libraryUnit"><option value="all">すべての単元</option></select></div>
+   <p id="libraryCount" class="count-label"></p><div id="libraryArea" class="deck-view"></div>
+  </section>
+  <section id="materialsView" hidden aria-labelledby="materialsTitle">
+   <header class="page-head"><div><p class="eyebrow">STUDY NOTES</p><h1 id="materialsTitle">試験前の学習教材</h1><p>短く復習する。じっくり理解する。</p></div></header>
+   <div class="material-grid">
+    <article class="material-card featured"><p class="eyebrow">LAST-MINUTE REVIEW</p><div class="material-number">10<small>ページ</small></div><h2>直前まとめ</h2><p>重要な数字・制度の比較・間違えやすい例外を、試験前にまとめて確認。</p><div class="material-links"><a class="primary-link" href="print-short.html" target="_blank" rel="noopener">読んで復習</a><a href="output/pdf/seikei-midterm-202610-short.pdf" target="_blank" rel="noopener">PDFを開く</a></div></article>
+    <article class="material-card"><p class="eyebrow">COMPLETE NOTES</p><div class="material-number">68<small>テーマ / 140ページ</small></div><h2>解説・問題・解答の完全版</h2><p>仕組みの説明から238問の演習まで。苦手な単元の理解を深めたいときに。</p><div class="material-links"><a class="primary-link" href="print-complete.html" target="_blank" rel="noopener">教材を読む</a><a href="output/pdf/seikei-midterm-202610-complete.pdf" target="_blank" rel="noopener">PDFを開く</a></div></article>
+   </div>
+   <details class="info-block"><summary>教材の範囲・確認状況</summary><p id="scopeCount" class="source"></p><p class="source">問題集180問の問題文・全選択肢・出版社解説を確認し、要求判断を独自演習へ対応付けました。作成者による照合であり、試験成績や学習効果を保証するものではありません。</p><div class="link-list"><a href="coverage.html" target="_blank" rel="noopener">180問の対応表</a><a href="sources.html" target="_blank" rel="noopener">資料・法令の確認状況</a><a href="print.html" target="_blank" rel="noopener">旧60ページ版</a></div></details>
+   <p class="source" id="materialsOffline" role="status" style="margin-top:20px">オフラインで読むには、一度オンラインでアプリの準備を完了してください。PDFは端末に保存して利用できます。</p>
+  </section>
+  <section id="progressView" hidden aria-labelledby="progressTitle">
+   <header class="page-head"><div><p class="eyebrow">YOUR PROGRESS</p><h1 id="progressTitle">学習の積み重ね</h1><p>苦手を見つけて、次の一問へ。</p></div></header>
+   <div class="progress-overview"><h2 id="masteryHeadline">68テーマを少しずつ</h2><p id="masteryCaption"></p><div class="progress-track"><span id="masteryFill"></span></div></div>
+   <div class="stats" aria-label="成績"><div class="stat"><span>正解</span><strong id="okCount">0</strong></div><div class="stat"><span>ミス</span><strong id="missCount">0</strong></div><div class="stat"><span>目標習得</span><strong id="learnedCount">0</strong></div><div class="stat"><span>連続正解</span><strong id="streakCount">0</strong></div><div class="stat"><span>未克服の弱点</span><strong id="weakCount">0</strong></div></div>
+   <div class="action-stack"><button id="weakBtn" class="primary">弱点を復習する</button><button id="reviewBtn">全範囲を復習する</button></div>
+   <section class="info-block"><h2>単元ごとの習得</h2><div id="unitProgress" class="unit-progress"></div></section>
+   <details class="info-block"><summary>「習得」のめやす</summary><p class="help-copy">同じ問題を10分以上空けて2回以上正解し、連続正解すると問題を習得します。語句だけでなく、指定された判断問題も習得すると目標達成です。</p><p class="source">追加単元は語句と指定の判断問題すべて、既存単元は語句と異なる判断問題2問が条件です。</p></details>
+   <section class="info-block"><h2>進捗を保存・引き継ぐ</h2><p class="help-copy">進捗はこのブラウザに自動保存されます。別の端末へ移すときは、JSONを書き出して読み込んでください。</p><div class="action-stack"><button id="exportBtn">バックアップを書き出す</button><button id="importBtn" aria-controls="importPanel">バックアップを読み込む</button></div>
+    <section id="importPanel" hidden><h3>進捗の復元</h3><label for="progressFile">今回の試験の進捗JSON</label><input id="progressFile" type="file" accept=".json,application/json"><p id="importPreview" class="source" aria-live="polite">JSONを選ぶと内容を検査します。まだ進捗は変更されません。</p><div class="action-stack"><button id="applyImport" class="primary" disabled>この内容で復元する</button><button id="undoImport" disabled>復元前に戻す</button><button id="cancelImport">閉じる</button></div></section>
+   </section>
+   <details class="info-block"><summary>進捗のリセット</summary><p class="help-copy">今回の試験の正誤履歴・弱点・習得状態を初期化します。</p><button class="danger-action" id="resetBtn">今回の進捗をリセット</button></details>
+  </section>
+ </div></main>
+</div>
+<dialog class="filter-dialog" id="filterDialog" aria-labelledby="filterTitle">
+ <div class="dialog-head"><h2 id="filterTitle">出題設定</h2><button id="closeFilters" aria-label="出題設定を閉じる">×</button></div>
+ <div class="dialog-body">
+  <section class="control-panel" id="stagePanel"><h3>学習単元</h3><div class="stage-grid" id="stageGrid"></div></section>
+  <section class="control-panel" id="modePanel"><h3>出題形式</h3><div class="mode-grid" id="modeGrid"></div></section>
+  <div class="select-grid"><div><label for="studyFilter">出題対象</label><select id="studyFilter"><option value="all">収録全問</option><option value="unmastered">未習得を優先</option><option value="weak">間違えた問題</option></select></div><div><label for="importance">重要度</label><select id="importance"><option value="all">すべて</option><option value="A">A：試験直前の重点</option><option value="B">B：理解を補う基礎</option></select></div></div>
+  <p id="filterStatus" class="source" aria-live="polite"></p>
+  <p id="filterMatch" class="source"></p>
+ </div><div class="dialog-foot"><button class="primary" id="applyFilters">この設定で学習する</button></div>
+</dialog>
+<script src="./data/study-data.js"></script><script src="./core.js"></script><script src="./app.js"></script>
 </body></html>

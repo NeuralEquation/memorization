@@ -1,7 +1,8 @@
-const CACHE_NAME = "seikei-midterm-202610-4";
+const CACHE_NAME = "seikei-midterm-202610-5";
 const ASSETS = [
   "./",
   "./index.html",
+  "./styles.css",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./data/study-data.js",

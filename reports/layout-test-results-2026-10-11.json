@@ -1,0 +1,26 @@
+{
+  "passed": 20,
+  "checks": [
+    "initial shell, old bank isolation and offline preparation",
+    "navigation keeps the active question and draft settings cancel without changing it",
+    "mobile starts with the question, fixed navigation and usable settings at 320/360/390px",
+    "changing views preserves typed answers, partial ordering and answered feedback",
+    "all 238 question texts remain complete after presentation formatting",
+    "visual review of long questions, settings and all four views on phone/tablet/desktop",
+    "recall rejects fragments; feedback waits for next; reload preserves progress",
+    "weak-only, unknown, empty filter and full review",
+    "choice scoring and double-submit protection",
+    "judge needs verdict plus correction, including incorrect reason",
+    "order input and numeric calculation",
+    "unit and importance filters, responsive 360px without horizontal overflow",
+    "50-question round completes while delayed mistakes do not starve new questions",
+    "offline reload plus print and coverage and missing assets",
+    "progress export, validated preview, cancel, restore, reload and undo",
+    "unmastered priority and mastered fallback agree with their visible status",
+    "every new chart/table renders and grades at 360px, without leaking feedback",
+    "short print is ten A4 sheets with no internal overflow",
+    "isolated reset clears new state while preserving old exam key",
+    "upgrade actual previous 238-question layout and cache v4, preserve progress and unrelated cache"
+  ],
+  "errors": []
+}
