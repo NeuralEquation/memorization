@@ -93,5 +93,5 @@ module.exports=function buildLessons(study,quests,atoms){
   review.push({questId:quest.id,objectives:quest.objectives,authoredPages:intro.length,lessonPages:cards.length,readingCharacters:chars,definedTerms:terms.map(([t])=>t),workedExamples:1+cards.filter(c=>c.kind==='worked'&&c.basisIds).length,comparisonRows:a.comparison.length,misconceptions:a.pitfalls.length,minutes:quest.minutes});
  }
  if(Object.keys(questionTeaching).length!==238||Object.keys(atomTeaching).length!==218)throw Error('Incomplete lesson coverage');
- return {decks,questionTeaching,atomTeaching,glossary,review,revision:'2026-10-12.lessons.2'};
+ return {decks,questionTeaching,atomTeaching,glossary,review,revision:'2026-10-12.lessons.3'};
 };

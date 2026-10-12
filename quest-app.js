@@ -2,7 +2,8 @@
 (function(){
   'use strict';
   const Q=window.QuestCore,cat=Q.catalog(window.STUDY_DATA,window.QUEST_DATA);
-  const KEY='seikei-quest-202610-v1',BEFORE=KEY+'-before-import',VIEW=KEY+'-screen';
+  const scope=new URL(location.href).searchParams.get('pilot');
+  const KEY='seikei-quest-202610-v1'+(/^[a-z0-9-]{1,48}$/.test(scope||'')?'-pilot-'+scope:''),BEFORE=KEY+'-before-import',VIEW=KEY+'-screen';
   const e=id=>document.getElementById(id),escape=window.StudyCore?x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])):String;
   let p=Q.empty(),screen='map',minutes=10,message='',unreadable=null,readIssue='',pendingImport=null,importNonce=0;
   try{const raw=localStorage.getItem(KEY);if(raw){try{p=Q.restore(raw,cat);}catch(error){unreadable=raw;readIssue=error.message+' 元の保存データは残しています。下のバックアップから復元できます。';}}screen=localStorage.getItem(VIEW)==='play'&&p.session?'play':'map';minutes=p.session?.minutes||10;}catch{readIssue='このブラウザでは保存先を読み取れません。進捗を書き出して保管してください。';}
@@ -37,6 +38,7 @@
         </aside>
       </div>
       ${saveLine()}
+      ${scope?'':'<details class="info-block"><summary>授業の理解度と時間を確かめる</summary><p>普段の進捗と分けて、学習前・直後・翌日の確認と、学習時間・つまずきを記録できます。氏名不要・自動送信なし。</p><a href="./pilot.html">実測ページを開く →</a></details>'}
       <section class="quest-map" aria-label="クエストマップ"><div class="quest-section-head"><h2>クエストマップ</h2><span>37クエスト · 68学習目標</span></div>
       ${chapters.map((chapter,chapterIndex)=>{const qs=cat.source.quests.filter(q=>q.chapter===chapter),n=qs.filter(q=>Q.questStatus(p,q).reached).length;return '<details class="quest-chapter" '+((q?.chapter||chapters[0])===chapter?'open':'')+'><summary><span class="quest-chapter-number">'+String(chapterIndex+1).padStart(2,'0')+'</span><strong>'+escape(chapter)+'</strong><span>'+n+' / '+qs.length+' 到達</span></summary><div class="quest-nodes">'+qs.map(item=>{
         const stat=Q.questStatus(p,item),missing=item.prerequisites.filter(id=>!p.reached[id]);

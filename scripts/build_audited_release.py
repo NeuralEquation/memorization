@@ -7,7 +7,7 @@ def publish(root,objectives,questions):
     for o in new:o['baselineObjectives']=BASELINE[o['id']]
     objectives.extend(new);questions.extend(qs);questions.extend(applications(objectives))
     # The existing exercises keep their IDs and meanings, so stored progress survives.
-    data=dict(version='2026-10-10.1',release='2026-10-10.4',examDate='2026-10-14',
+    data=dict(version='2026-10-10.1',release='2026-10-12.5',examDate='2026-10-14',
       coverage=dict(total=180,verified=180,partial=0,unreviewed=0,reason='問題文・全選択肢・出版社解説を画像で確認し、要求する判断と独自演習を作成者が照合。学習効果や第三者監査を保証しない。'),objectives=objectives,questions=questions)
     keypath=root/'private/政経_問題集180問_出版社解答照合済み.json'
     if not keypath.exists():raise RuntimeError('Publisher-checked private key is required to rebuild the audit.')

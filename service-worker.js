@@ -1,9 +1,14 @@
-const CACHE_NAME = "seikei-midterm-202610-7";
+const CACHE_NAME = "seikei-midterm-202610-8";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./quests.css",
+  "./pilot.html",
+  "./pilot.css",
+  "./pilot-core.js",
+  "./pilot.js",
+  "./reports/pilot-protocol-2026-10-12.md",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./data/study-data.js",

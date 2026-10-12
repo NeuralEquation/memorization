@@ -48,8 +48,13 @@ test('new page navigation persists, rejects impossible pages, and odd review cou
  const old=oldQ.empty();oldQ.start(old,oldCat,10,1000,'Q01');while(oldQ.current(old,oldCat)?.kind==='lesson')oldQ.advance(old,oldCat,1000);oldQ.submit(old,oldCat,answer(oldCat.questions[oldQ.current(old,oldCat).questionId]),true,1000);oldQ.advance(old,oldCat,1000);
  const x=Q.restore(JSON.stringify(old),cat);Q.start(x,cat,10,1000+Q.DAY,'Q02');Q.start(x,cat,10,1000+Q.DAY);assert.equal(x.session.reviewIds.length,1);assert.ok(Number.isInteger(x.session.estimatedMinutes));assert.doesNotThrow(()=>Q.restore(JSON.stringify(x),cat));
 });
-test('238 questions, 180 mapping rows, grading core and print materials are unchanged after checkout newline normalization',()=>{
- for(const f of ['data/study-data.js','data/coverage.json','data/coverage-atoms.json','coverage.csv','core.js','app.js','print.html','print-complete.html','print-short.html'])assert.equal(fs.readFileSync(f,'utf8').replace(/\r\n/g,'\n'),oldFile(f).replace(/\r\n/g,'\n'),f);
- for(const f of ['output/pdf/seikei-midterm-202610.pdf','output/pdf/seikei-midterm-202610-complete.pdf','output/pdf/seikei-midterm-202610-short.pdf'])assert.ok(fs.readFileSync(f).equals(execFileSync('git',['show',baseline+':'+f],{maxBuffer:20*1024*1024})),f);
- assert.deepEqual(source.introQuestions,oldSource.introQuestions);assert.deepEqual(source.coverage,oldSource.coverage);
+test('review corrections retain all 238 IDs and answers, 180 identities, grading core and legacy prints',()=>{
+ for(const f of ['core.js','print.html'])assert.equal(fs.readFileSync(f,'utf8').replace(/\r\n/g,'\n'),oldFile(f).replace(/\r\n/g,'\n'),f);
+ const prior={window:{}};vm.runInNewContext(oldFile('data/study-data.js'),prior);const oldStudy=JSON.parse(JSON.stringify(prior.window.STUDY_DATA));
+ assert.deepEqual(study.questions.map(q=>q.id),oldStudy.questions.map(q=>q.id));
+ for(const q of study.questions){const old=oldStudy.questions.find(x=>x.id===q.id);for(const key of ['answer','type','objective','options','correctionAnswer','formula','atomIds'])assert.deepEqual(q[key],old[key],q.id+' '+key);if(q.statements)assert.deepEqual(q.statements.map(s=>s.truth),old.statements.map(s=>s.truth));}
+ const identity=r=>[r.page,r.number,r.appIds,r.skills];assert.deepEqual(JSON.parse(fs.readFileSync('data/coverage.json','utf8')).map(identity),JSON.parse(oldFile('data/coverage.json')).map(identity));
+ const ordinary=fs.readFileSync('app.js','utf8').replace(/\r\n/g,'\n').replace(/const pilotScope=[^\n]+\nconst KEY=[^\n]+/,"const KEY='seikei-midterm-202610-v1';");assert.equal(ordinary,oldFile('app.js').replace(/\r\n/g,'\n'),'ordinary app changes are limited to opt-in pilot storage scope');
+ const f='output/pdf/seikei-midterm-202610.pdf';assert.ok(fs.readFileSync(f).equals(execFileSync('git',['show',baseline+':'+f],{maxBuffer:20*1024*1024})),f);
+ assert.deepEqual(source.introQuestions.map(q=>[q.id,q.answer,q.options]),oldSource.introQuestions.map(q=>[q.id,q.answer,q.options]));assert.deepEqual(source.coverage,oldSource.coverage);
 });

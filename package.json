@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "devDependencies": { "playwright": "1.62.1" },
   "scripts": {
-    "test": "node --test tests/core.test.js tests/quest.test.js tests/lesson.test.js",
+    "test": "node --test tests/core.test.js tests/quest.test.js tests/lesson.test.js tests/pilot.test.js",
+    "test:pilot-browser": "node tests/pilot-browser.cjs",
     "test:lesson-browser": "node tests/lesson-browser.cjs",
     "test:quest-browser": "node tests/quest-browser.cjs",
     "test:browser": "node tests/browser.cjs",

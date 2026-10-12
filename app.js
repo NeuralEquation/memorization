@@ -1,6 +1,7 @@
 'use strict';
 const data=window.STUDY_DATA, C=window.StudyCore;
-const KEY='seikei-midterm-202610-v1';
+const pilotScope=new URL(location.href).searchParams.get('pilot');
+const KEY='seikei-midterm-202610-v1'+(/^[a-z0-9-]{1,48}$/.test(pilotScope||'')?'-pilot-'+pilotScope:'');
 const $=id=>document.getElementById(id);
 const esc=x=>String(x).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
 let progress;
