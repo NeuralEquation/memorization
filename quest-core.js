@@ -64,6 +64,13 @@
       put(steps,{id:q.explainId,kind:'explain',phase:'boss',questionId:q.explainId});
       cat.questSteps[q.id]=steps;
     }
+    if(source.lessons){
+      for(const [id,cards] of Object.entries(source.lessons.decks)){
+        if(cat.steps[id]?.kind!=='lesson'||!cards.length)throw Error('授業ページが一致しません。');
+        cat.steps[id].cards=cards;
+      }
+      cat.teaching=source.lessons.questionTeaching;cat.glossary=source.lessons.glossary;
+    }
     return cat;
   }
   function empty(){return {version:VERSION,turn:0,records:{},lessons:{},reached:{},runs:{},pending:[],session:null};}
@@ -83,11 +90,11 @@
   function plan(p,cat,minutes,now=Date.now()){
     if(![10,30,60].includes(minutes))throw Error('学習時間を選んでください。');
     const reviewIds=dueQuestions(p,cat,now).slice(0,Math.min(6,minutes/5));
-    const budget=minutes-1-reviewIds.length*.5;let used=0;
+    const budget=minutes-1-reviewIds.length*.5;let used=0,partialQuest=false;
     const ids=[];
-    for(const q of cat.source.quests){if(p.reached[q.id])continue;if(used+q.minutes>budget)break;ids.push(q.id);used+=q.minutes;}
+    for(const q of cat.source.quests){if(p.reached[q.id])continue;if(used+q.minutes>budget){if(!ids.length){ids.push(q.id);used=Math.max(1,budget);partialQuest=true;}break;}ids.push(q.id);used+=q.minutes;}
     if(reviewIds.length)ids.splice(Math.min(1,ids.length),0,'@review');
-    return {minutes,ids,reviewIds,estimatedMinutes:used+Math.ceil(reviewIds.length*.5)};
+    return {minutes,ids,reviewIds,estimatedMinutes:Math.ceil(used+reviewIds.length*.5),partialQuest};
   }
   function newRun(cat,id){return {questId:id,steps:cat.questSteps[id].slice(),index:0,response:null,draft:{},helped:false,retries:0,done:false};}
   function run(p){if(!p.session)return null;const id=p.session.ids[p.session.position];return id==='@review'?p.session.reviewRun:p.runs[id]||null;}
@@ -134,7 +141,11 @@
   }
   function advance(p,cat,now=Date.now()){
     const r=run(p),s=current(p,cat);if(!r||!s)return false;
-    if(s.kind==='lesson')p.lessons[s.id]=now;else if(!r.response)return false;
+    if(s.kind==='lesson'){
+      const page=r.draft.lessonPage||0;
+      if(s.cards&&page+1<s.cards.length){r.draft.lessonPage=page+1;return true;}
+      p.lessons[s.id]=now;
+    }else if(!r.response)return false;
     r.index++;r.response=null;r.draft={};r.helped=false;
     // At most two decomposed retries per quest. Three intervening answers are required.
     // The remaining weak points stay available for later quests and next-day review.
@@ -169,10 +180,11 @@
       if(!object(r)||r.questId!==id||!Array.isArray(r.steps)||r.steps.length>80||!r.steps.every(s=>cat.steps[s])||!integer(r.index)||r.index>r.steps.length||typeof r.done!=='boolean'||r.done!==(r.index===r.steps.length)||typeof r.helped!=='boolean'||!integer(r.retries)||r.retries>2||!object(r.draft))bad();
       if(id){if(r.steps.filter(s=>cat.steps[s].phase!=='retry').join('|')!==cat.questSteps[id].join('|')||r.steps.filter(s=>cat.steps[s].phase==='retry').length!==r.retries)bad();}
       else if(r.steps.some(s=>cat.steps[s].kind==='lesson'||cat.steps[s].phase==='retry'))bad();
-      for(const key of Object.keys(r.draft))if(!['text','order','verdict','selfExplained','notes','optionOrder'].includes(key))bad();
+      for(const key of Object.keys(r.draft))if(!['text','order','verdict','selfExplained','notes','optionOrder','lessonPage'].includes(key))bad();
       if(r.draft.text!==undefined&&(typeof r.draft.text!=='string'||r.draft.text.length>2000))bad();
       if(r.draft.notes!==undefined&&(typeof r.draft.notes!=='string'||r.draft.notes.length>2000))bad();
       const step=cat.steps[r.steps[r.index]],q=step?.questionId&&cat.questions[step.questionId];
+      if(r.draft.lessonPage!==undefined&&(!integer(r.draft.lessonPage)||step?.kind!=='lesson'||r.draft.lessonPage>=(step.cards?.length||1)))bad();
       if(r.draft.order!==undefined&&(!q?.items||!Array.isArray(r.draft.order)||r.draft.order.length>q.items.length||new Set(r.draft.order).size!==r.draft.order.length||!r.draft.order.every(x=>q.items.includes(x))))bad();
       if(r.draft.verdict!==undefined&&typeof r.draft.verdict!=='boolean')bad();
       if(r.draft.selfExplained!==undefined&&typeof r.draft.selfExplained!=='boolean')bad();

@@ -20,14 +20,14 @@
     const recommended=planned.ids.find(id=>id!=='@review'),q=cat.quests[recommended];
     const chapters=[...new Set(cat.source.quests.map(q=>q.chapter))];
     e('questContent').innerHTML=`
-      <header class="page-head"><div><p class="eyebrow">QUEST LEARNING</p><h1>学んでから、挑戦しよう。</h1><p>知識ゼロから一歩ずつ。1クエストの目安は5〜8分。</p></div></header>
+      <header class="page-head"><div><p class="eyebrow">QUEST LEARNING</p><h1>学んでから、挑戦しよう。</h1><p>言葉の意味から、例題の解き方まで。一つずつ授業を進めます。</p></div></header>
       ${readIssue?'<p class="quest-warning" role="alert">'+escape(readIssue)+'</p>':''}
       <div class="quest-dashboard">
         <section class="quest-start"><p class="eyebrow">今日の学習時間</p><div class="quest-time" role="group" aria-label="学習時間">${[10,30,60].map(m=>'<button data-qtime="'+m+'" aria-pressed="'+(m===minutes)+'">'+m+'<small>分</small></button>').join('')}</div>
           ${resume?'<div class="quest-resume"><b>続きが保存されています</b><p>'+escape(currentRun.questId?cat.quests[currentRun.questId].title:'間隔を空けた復習')+' · ステップ '+(currentRun.index+1)+' / '+currentRun.steps.length+'</p><button id="questResume" class="primary">続きから再開 →</button></div>':''}
           <p class="quest-recommend">${q?'次のおすすめ · '+q.id:'復習のタイミング'}</p><h2>${escape(q?q.title:due.length?'昨日の内容を思い出そう':'全範囲に到達しました')}</h2>
           <p>${escape(q?q.intro:'復習は最初の解説を見ずに答えます。24時間以上空けた自力正解を定着として記録します。')}</p>
-          <p class="source">${planned.ids.filter(id=>id!=='@review').length}クエスト${planned.reviewIds.length?' ＋ 復習'+planned.reviewIds.length+'問':''} · 目安${planned.estimatedMinutes}分${planned.ids.length?'（読む速さ・復習で前後します）':''}</p>
+          <p class="source">${planned.partialQuest?'1クエストを途中まで。'+minutes+'分を区切りに保存して中断できます。':planned.ids.filter(id=>id!=='@review').length+'クエスト · 目安'+planned.estimatedMinutes+'分'}${planned.reviewIds.length?' ＋ 復習'+planned.reviewIds.length+'問':''}<br>読む速さで前後します。時間による強制終了はありません。</p>
           <button id="questStartPlan" class="${resume?'':'primary'}" ${planned.ids.length?'':'disabled'}>${resume?'新しい時間コースを始める':'学習をはじめる →'}</button>
         </section>
         <aside class="quest-overview"><h2>ここまでの冒険</h2><div class="quest-totals"><div><strong>${completed}<small> / 37</small></strong><span>クエスト到達</span></div><div><strong>${settled}<small> / 37</small></strong><span>間隔を空けて定着</span></div></div><div class="progress-track"><span style="width:${completed/37*100}%"></span></div>
@@ -43,7 +43,7 @@
         return '<button class="quest-node '+(stat.settled?'is-settled':stat.reached?'is-reached':'')+'" data-quest="'+item.id+'"><span class="quest-node-number">'+(stat.settled?'✓':String(item.order).padStart(2,'0'))+'</span><span class="quest-node-content"><strong>'+escape(item.title)+'</strong><small>'+item.objectives.map(id=>escape(cat.study.objectives.find(o=>o.id===id).title)).join(' / ')+'</small><small>'+item.minutes+'分目安'+(missing.length?' · 先に '+missing.join('・')+' がおすすめ':'')+'</small></span><span class="quest-state">'+statusText(item)+'</span></button>';
       }).join('')+'</div></details>';}).join('')}</section>
       <details class="info-block"><summary>単元別の到達率</summary><div class="unit-progress">${[...new Set(cat.study.objectives.map(o=>o.unit))].map(unit=>{const os=cat.study.objectives.filter(o=>o.unit===unit),reached=os.filter(o=>cat.source.quests.some(q=>q.objectives.includes(o.id)&&Q.questStatus(p,q).reached)).length;return '<div class="unit-row"><b>'+escape(unit)+'</b><span>'+reached+' / '+os.length+'目標（'+Math.round(reached/os.length*100)+'%）</span></div>';}).join('')}</div></details>
-      <details class="info-block"><summary>到達・クリア・定着のちがい</summary><ul class="quest-help-list"><li><b>到達</b>：解説と全問題を一通り学習。復習が残っていても次へ進めます。</li><li><b>クリア</b>：元の演習・基礎問題を自力で正解し、説明チェックも通過。</li><li><b>定着</b>：それらを24時間以上空けて再び自力で正解。説明の自己確認だけでは加点しません。</li></ul><p class="source">説明チェックは根拠選択と自己確認の組合せです。入力した説明文を自動採点するものではありません。学習効果や試験の得点を保証する表示ではありません。</p><p class="source">初回に全範囲へ到達する時間は合計約235分の設計上の目安です。時間コースは目安で、制限時間による打切りはありません。誤答の復習や休憩は別途かかります。</p></details>
+      <details class="info-block"><summary>到達・クリア・定着のちがい</summary><ul class="quest-help-list"><li><b>到達</b>：解説と全問題を一通り学習。復習が残っていても次へ進めます。</li><li><b>クリア</b>：元の演習・基礎問題を自力で正解し、説明チェックも通過。</li><li><b>定着</b>：それらを24時間以上空けて再び自力で正解。説明の自己確認だけでは加点しません。</li></ul><p class="source">説明チェックは根拠選択と自己確認の組合せです。入力した説明文を自動採点するものではありません。以前の到達・クリア・定着は保持しています。追加授業は各クエストを選び直して読めます。</p><p class="source">授業を含む全範囲は約${cat.source.quests.reduce((n,q)=>n+q.minutes,0)}分、各クエスト${Math.min(...cat.source.quests.map(q=>q.minutes))}〜${Math.max(...cat.source.quests.map(q=>q.minutes))}分の設計目安です。読解と考える時間を含めて見直しましたが、初心者の実測値ではありません。休憩・追加復習は別にかかります。</p></details>
       <details class="info-block" id="questBackup"><summary>クエスト進捗を引き継ぐ</summary><p class="source">通常演習の記録とは別に保存します。別端末ではこのクエスト用JSONを読み込んでください。</p><div class="action-stack"><button id="questExport">クエスト進捗を書き出す</button><button id="questImportOpen">クエスト進捗を読み込む</button></div><section id="questImportPanel" hidden><label for="questFile">クエスト用JSON（2MB以下）</label><input id="questFile" type="file" accept=".json,application/json"><p id="questImportPreview" class="source" aria-live="polite">検査するまで現在の進捗は変更されません。</p><div class="action-stack"><button id="questImportApply" disabled>この内容で復元</button><button id="questImportUndo">復元前に戻す</button><button id="questImportCancel">閉じる</button></div></section></details>`;
     document.querySelectorAll('[data-qtime]').forEach(b=>b.onclick=()=>{minutes=Number(b.dataset.qtime);map();document.querySelector('[data-qtime="'+minutes+'"]').focus({preventScroll:true});});
     if(e('questResume'))e('questResume').onclick=()=>{screen='play';persist();render();};
@@ -63,17 +63,32 @@
       <div class="quest-step-label"><span>${r.done?'このクエストの学習を保存しました':(s.phase==='retry'?'少し間を空けて、類題で確認 · ':'')+'ステップ '+(r.index+1)+' / '+r.steps.length}</span><span>${p.session.position+1} / ${p.session.ids.length}区間</span></div><div class="session-progress"><span style="width:${r.index/r.steps.length*100}%"></span></div><div id="questStage"></div>${saveLine()}`;
     e('questMapBack').onclick=pause;e('questPause').onclick=pause;
     if(r.done){result(r,quest);return;}
-    if(s.kind==='lesson')lesson(s);else question(s,r);
+    if(s.kind==='lesson')lesson(s,r);else question(s,r);
   }
   function pause(){screen='map';persist();render();}
-  function lesson(s){
-    e('questStage').innerHTML=`<article class="quest-lesson"><p class="eyebrow">${s.phase==='learn'?'まず、ここから':'応用の前に整理しよう'}</p><h2>${escape(s.title)}</h2>
-      ${s.term?'<div class="quest-term"><span>まず覚える言葉</span><strong>'+escape(s.term)+'</strong></div>':''}
-      ${s.text?'<p class="quest-lead">'+escape(s.text)+'</p>':''}
-      ${s.example?'<div class="quest-example"><b>たとえば</b><p>'+escape(s.example)+'</p></div>':''}
-      ${s.compare?'<div class="quest-compare"><b>ここを分けて覚える</b><p>'+escape(s.compare)+'</p></div>':''}
-      ${s.points?.length?'<ul class="quest-learning-points">'+s.points.map(x=>'<li>'+escape(x)+'</li>').join('')+'</ul>':''}
-      <details class="quest-source"><summary>根拠となる教材</summary><p>${escape(s.source)}</p></details><button id="questContinue" class="primary quest-wide">読んだので進む →</button></article>`;
+  function glossaryHTML(card){
+    const text=JSON.stringify(card),terms=Object.entries(cat.glossary||{}).filter(([term])=>text.includes(term));
+    return terms.length?'<details class="lesson-glossary"><summary>このページの言葉を確認（'+terms.length+'語）</summary><dl>'+terms.map(([term,meaning])=>'<dt>'+escape(term)+'</dt><dd>'+escape(meaning)+'</dd>').join('')+'</dl></details>':'';
+  }
+  function lessonHTML(c){
+    return '<h2>'+escape(c.title)+'</h2>'+(c.term?'<div class="quest-term"><span>意味から覚えよう</span><strong>'+escape(c.term)+'</strong></div>':'')+
+      (c.text?'<p class="quest-lead">'+escape(c.text)+'</p>':'')+
+      (c.definitions?'<dl class="lesson-definitions">'+c.definitions.map(([t,d])=>'<dt>'+escape(t)+'</dt><dd>'+escape(d)+'</dd>').join('')+'</dl>':'')+
+      (c.example?'<div class="quest-example"><b>具体的に考えると</b><p>'+escape(c.example)+'</p></div>':'')+
+      (c.comparison?'<div class="lesson-table-wrap"><table class="lesson-table"><caption>何が違い、なぜ違う？</caption><thead><tr><th>比べる対象</th><th>仕組み・判定</th><th>理由・読み方</th></tr></thead><tbody>'+c.comparison.map(row=>'<tr>'+row.map(v=>'<td>'+escape(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>':'')+
+      (c.prompt?'<div class="quest-example"><b>一緒に考える例題</b><p>'+escape(c.prompt)+'</p></div>':'')+
+      ((c.table||c.charts)&&typeof questionData==='function'?questionData(c):'')+
+      (c.steps?'<ol class="lesson-reasoning">'+c.steps.map(t=>'<li>'+escape(t)+'</li>').join('')+'</ol>':'')+
+      (c.conclusion?'<p class="lesson-conclusion"><b>だから、こう考える</b><br>'+escape(c.conclusion)+'</p>':'')+
+      (c.points?'<ul class="quest-learning-points">'+c.points.map(t=>'<li>'+escape(t)+'</li>').join('')+'</ul>':'')+
+      (c.another?'<details class="lesson-another"><summary>別の例でもう一度</summary><p>'+escape(c.another)+'</p></details>':'')+glossaryHTML(c);
+  }
+  function lesson(s,r){
+    const cards=s.cards||[s],page=r.draft.lessonPage||0,c=cards[page];
+    e('questStage').innerHTML='<article class="quest-lesson"><p class="eyebrow">'+escape(s.phase==='learn'?'まず、意味から理解しよう':'本番の前に、判断の根拠を学ぼう')+'</p><p class="lesson-page">この授業の '+(page+1)+' / '+cards.length+' ページ</p>'+lessonHTML(c)+
+      (c.recap?'<details class="lesson-another"><summary>要点だけ確認</summary><p>'+escape(c.recap)+'<br><b>'+escape(c.term)+'</b></p></details>':'')+
+      '<details class="quest-source"><summary>根拠となる教材</summary><p>'+escape(s.source)+'</p></details><div class="lesson-controls"><button id="questLessonBack" '+(page?'':'disabled')+'>← 前のページ</button><button id="questContinue" class="primary">'+(page+1<cards.length?'理解して次へ →':'この授業を終えて進む →')+'</button></div></article>';
+    e('questLessonBack').onclick=()=>{if(page){r.draft.lessonPage=page-1;persist();render();}};
     e('questContinue').onclick=()=>{Q.advance(p,cat);persist();render();};
   }
   function ensureOrder(r,q){const values=q.options||q.correctionOptions||q.items;if(values&&!r.draft.optionOrder){r.draft.optionOrder=values.map((_,i)=>i);for(let i=r.draft.optionOrder.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r.draft.optionOrder[i],r.draft.optionOrder[j]]=[r.draft.optionOrder[j],r.draft.optionOrder[i]];}persist();}return r.draft.optionOrder;}
@@ -112,6 +127,12 @@
     const title=response.credit?'正解！':response.ok?'答えは合っています':'ここで確認して、次へ進もう';
     e('questFeedback').className='quest-feedback '+(response.credit?'ok':'review');
     e('questFeedback').innerHTML='<h3>'+title+'</h3><p><b>正答：'+escape(correct)+'</b></p><p>'+escape(q.explanation)+'</p>'+(q.optionReasons?'<details><summary>それぞれの選択肢の理由</summary><ul>'+(q.options||q.correctionOptions).map((v,i)=>'<li>'+escape(v)+'：'+escape(q.optionReasons[i])+'</li>').join('')+'</ul></details>':'')+(!response.credit?'<p class="source">'+(response.helped?'学び直しとして保存しました。':q.kind==='explain'&&response.ok?'理由を自分で説明できるよう、復習に残します。':'一度で覚えなくて大丈夫。間を空けて確認します。')+'今は次の内容へ進めます。</p>':'')+'<details class="quest-source"><summary>根拠となる教材</summary><p>'+escape(q.source)+'</p></details><button id="questNext" class="primary quest-wide">次へ進む →</button>';
+    const teaching=cat.teaching?.[q.baseId||q.id]||cat.teaching?.[q.basisIds?.[0]];
+    if(teaching){
+      const path=document.createElement('section');path.className='lesson-feedback-path';path.innerHTML='<h4>判断するまでの道筋</h4><ol class="lesson-reasoning">'+teaching.steps.map(t=>'<li>'+escape(t)+'</li>').join('')+'</ol>';
+      if(!response.credit){const cards=teaching.lessonRefs.map(ref=>cat.steps[ref.stepId].cards.find(c=>c.id===ref.cardId));path.innerHTML+='<details class="lesson-reteach"><summary>授業から学び直す（定義・例題・判断の根拠）</summary>'+cards.map(c=>'<details class="lesson-review-card"><summary>'+escape(c.title)+'</summary>'+lessonHTML(c)+'</details>').join('')+'</details>';}
+      e('questNext').before(path);
+    }
     e('questNext').onclick=()=>{Q.advance(p,cat);persist();render();};
   }
   function result(r,quest){

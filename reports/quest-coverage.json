@@ -20,7 +20,7 @@
       ],
       "atomIds": [],
       "prerequisites": [],
-      "minutes": 5
+      "minutes": 15
     },
     {
       "id": "Q02",
@@ -49,7 +49,7 @@
       "prerequisites": [
         "Q01"
       ],
-      "minutes": 6
+      "minutes": 13
     },
     {
       "id": "Q03",
@@ -87,7 +87,7 @@
         "Q01",
         "Q02"
       ],
-      "minutes": 8
+      "minutes": 16
     },
     {
       "id": "Q04",
@@ -117,7 +117,7 @@
       "prerequisites": [
         "Q02"
       ],
-      "minutes": 7
+      "minutes": 16
     },
     {
       "id": "Q05",
@@ -147,7 +147,7 @@
       "prerequisites": [
         "Q04"
       ],
-      "minutes": 7
+      "minutes": 16
     },
     {
       "id": "Q06",
@@ -172,7 +172,7 @@
       "prerequisites": [
         "Q04"
       ],
-      "minutes": 6
+      "minutes": 13
     },
     {
       "id": "Q07",
@@ -205,7 +205,7 @@
       "prerequisites": [
         "Q06"
       ],
-      "minutes": 7
+      "minutes": 14
     },
     {
       "id": "Q08",
@@ -233,7 +233,7 @@
       "prerequisites": [
         "Q06"
       ],
-      "minutes": 7
+      "minutes": 16
     },
     {
       "id": "Q09",
@@ -264,7 +264,7 @@
         "Q06",
         "Q08"
       ],
-      "minutes": 7
+      "minutes": 17
     },
     {
       "id": "Q10",
@@ -299,7 +299,7 @@
       "prerequisites": [
         "Q06"
       ],
-      "minutes": 7
+      "minutes": 15
     },
     {
       "id": "Q11",
@@ -333,7 +333,7 @@
       "prerequisites": [
         "Q06"
       ],
-      "minutes": 7
+      "minutes": 16
     },
     {
       "id": "Q12",
@@ -368,7 +368,7 @@
       "prerequisites": [
         "Q10"
       ],
-      "minutes": 8
+      "minutes": 18
     },
     {
       "id": "Q13",
@@ -400,7 +400,7 @@
       "prerequisites": [
         "Q04"
       ],
-      "minutes": 7
+      "minutes": 15
     },
     {
       "id": "Q14",
@@ -432,7 +432,7 @@
         "Q01",
         "Q04"
       ],
-      "minutes": 7
+      "minutes": 17
     },
     {
       "id": "Q15",
@@ -462,7 +462,7 @@
       "prerequisites": [
         "Q14"
       ],
-      "minutes": 6
+      "minutes": 15
     },
     {
       "id": "Q16",
@@ -483,7 +483,7 @@
       "prerequisites": [
         "Q15"
       ],
-      "minutes": 6
+      "minutes": 16
     },
     {
       "id": "Q17",
@@ -503,7 +503,7 @@
       "prerequisites": [
         "Q14"
       ],
-      "minutes": 5
+      "minutes": 13
     },
     {
       "id": "Q18",
@@ -530,7 +530,7 @@
         "Q01",
         "Q17"
       ],
-      "minutes": 6
+      "minutes": 15
     },
     {
       "id": "Q19",
@@ -556,7 +556,7 @@
       "prerequisites": [
         "Q18"
       ],
-      "minutes": 6
+      "minutes": 14
     },
     {
       "id": "Q20",
@@ -583,7 +583,7 @@
       "prerequisites": [
         "Q04"
       ],
-      "minutes": 6
+      "minutes": 14
     },
     {
       "id": "Q21",
@@ -603,7 +603,7 @@
       "prerequisites": [
         "Q20"
       ],
-      "minutes": 5
+      "minutes": 13
     },
     {
       "id": "Q22",
@@ -631,7 +631,7 @@
         "Q06",
         "Q21"
       ],
-      "minutes": 6
+      "minutes": 14
     },
     {
       "id": "Q23",
@@ -651,7 +651,7 @@
       "prerequisites": [
         "Q20"
       ],
-      "minutes": 5
+      "minutes": 13
     },
     {
       "id": "Q24",
@@ -683,7 +683,7 @@
         "Q21",
         "Q23"
       ],
-      "minutes": 7
+      "minutes": 14
     },
     {
       "id": "Q25",
@@ -710,7 +710,7 @@
       "prerequisites": [
         "Q01"
       ],
-      "minutes": 6
+      "minutes": 15
     },
     {
       "id": "Q26",
@@ -737,7 +737,7 @@
       "prerequisites": [
         "Q25"
       ],
-      "minutes": 7
+      "minutes": 17
     },
     {
       "id": "Q27",
@@ -757,7 +757,7 @@
         "Q26",
         "Q15"
       ],
-      "minutes": 6
+      "minutes": 15
     },
     {
       "id": "Q28",
@@ -778,7 +778,7 @@
       "prerequisites": [
         "Q27"
       ],
-      "minutes": 6
+      "minutes": 15
     },
     {
       "id": "Q29",
@@ -806,7 +806,7 @@
       "prerequisites": [
         "Q25"
       ],
-      "minutes": 7
+      "minutes": 17
     },
     {
       "id": "Q30",
@@ -826,7 +826,7 @@
       "prerequisites": [
         "Q14"
       ],
-      "minutes": 5
+      "minutes": 14
     },
     {
       "id": "Q31",
@@ -847,7 +847,7 @@
       "prerequisites": [
         "Q30"
       ],
-      "minutes": 6
+      "minutes": 17
     },
     {
       "id": "Q32",
@@ -865,7 +865,7 @@
       "prerequisites": [
         "Q31"
       ],
-      "minutes": 5
+      "minutes": 12
     },
     {
       "id": "Q33",
@@ -892,7 +892,7 @@
         "Q31",
         "Q32"
       ],
-      "minutes": 7
+      "minutes": 19
     },
     {
       "id": "Q34",
@@ -925,7 +925,7 @@
         "Q02",
         "Q30"
       ],
-      "minutes": 8
+      "minutes": 18
     },
     {
       "id": "Q35",
@@ -951,7 +951,7 @@
       "prerequisites": [
         "Q19"
       ],
-      "minutes": 6
+      "minutes": 14
     },
     {
       "id": "Q36",
@@ -974,7 +974,7 @@
         "Q19",
         "Q35"
       ],
-      "minutes": 5
+      "minutes": 11
     },
     {
       "id": "Q37",
@@ -1006,7 +1006,7 @@
         "Q12",
         "Q34"
       ],
-      "minutes": 7
+      "minutes": 15
     }
   ],
   "coverage": [

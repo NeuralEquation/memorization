@@ -1,4 +1,4 @@
-const CACHE_NAME = "seikei-midterm-202610-6";
+const CACHE_NAME = "seikei-midterm-202610-7";
 const ASSETS = [
   "./",
   "./index.html",

@@ -11,7 +11,7 @@ test('37 dependency-ordered quests cover exactly 68 objectives, 238 existing que
  assert.equal(new Set(source.quests.flatMap(q=>q.atomIds)).size,218);assert.equal(source.coverage.length,180);
  const original=JSON.parse(fs.readFileSync('data/coverage.json','utf8'));
  source.coverage.forEach((r,i)=>{assert.equal(r.page,original[i].page);assert.equal(r.number,original[i].number);assert.deepEqual(r.questionIds,original[i].appIds);assert.deepEqual(r.atomIds,original[i].skills);for(const id of r.questionIds)assert.ok(r.questIds.some(q=>cat.quests[q].questionIds.includes(id)));});
- for(const q of source.quests){assert.ok(q.minutes>=5&&q.minutes<=8);assert.ok(q.boss.length);for(const dep of q.prerequisites)assert.ok(cat.quests[dep].order<q.order);}
+ for(const q of source.quests){assert.ok(Number.isInteger(q.minutes)&&q.minutes>=10);assert.ok(q.lessonPages>=10);assert.ok(q.boss.length);for(const dep of q.prerequisites)assert.ok(cat.quests[dep].order<q.order);}
 });
 test('every quest starts with teaching and foundation before original applied/boss questions',()=>{
  for(const q of source.quests){const steps=cat.questSteps[q.id].map(id=>cat.steps[id]);assert.equal(steps[0].kind,'lesson');const phases=['learn','basic','apply','boss'];let rank=0;for(const s of steps){assert.ok(phases.indexOf(s.phase)>=rank);rank=phases.indexOf(s.phase);}

@@ -71,10 +71,12 @@ const quests=rows.map(([n,ids,deps,title,intro,example,compare,prompt,correct,wr
 });
 const allIds=quests.flatMap(q=>q.objectives);
 if(allIds.length!==68||new Set(allIds).size!==68||quests.flatMap(q=>q.questionIds).length!==238)throw Error('Missing or duplicate objectives/questions');
-for(const q of quests){if(!q.boss.length||q.minutes>8)throw Error('Quest size '+q.id+' '+q.minutes);for(const p of q.prerequisites)if(!quests.some(x=>x.id===p&&x.order<q.order))throw Error('Dependency '+q.id);}
+for(const q of quests){if(!q.boss.length)throw Error('Quest size '+q.id);for(const p of q.prerequisites)if(!quests.some(x=>x.id===p&&x.order<q.order))throw Error('Dependency '+q.id);}
 const mapped=coverage.map(row=>({page:row.page,number:row.number,questionIds:row.appIds,atomIds:row.skills,questIds:quests.filter(q=>q.questionIds.some(id=>row.appIds.includes(id))).map(q=>q.id)}));
 if(mapped.some(r=>!r.questIds.length)||new Set(quests.flatMap(q=>q.atomIds)).size!==218)throw Error('Coverage missing');
-const result={version:'2026-10-11.quest.1',baseVersion:data.version,quests,introQuestions,coverage:mapped};
+const lessons=require('./build_quest_lessons.cjs')(data,quests,atoms);
+const result={version:'2026-10-11.quest.1',baseVersion:data.version,quests,introQuestions,coverage:mapped,lessons};
 fs.writeFileSync(path.join(root,'data/quests.js'),'window.QUEST_DATA = '+JSON.stringify(result,null,2)+';\n');
 fs.writeFileSync(path.join(root,'reports/quest-coverage.json'),JSON.stringify({objectives:68,originalQuestions:238,atoms:218,workbookQuestions:180,quests:quests.map(q=>({id:q.id,objectives:q.objectives,questionIds:q.questionIds,atomIds:q.atomIds,prerequisites:q.prerequisites,minutes:q.minutes})),coverage:mapped},null,2)+'\n');
+fs.writeFileSync(path.join(root,'reports/quest-lesson-coverage.json'),JSON.stringify({revision:lessons.revision,review:lessons.review,questions:lessons.questionTeaching,atoms:lessons.atomTeaching,coverage:mapped},null,2)+'\n');
 console.log(JSON.stringify({quests:quests.length,introductions:introQuestions.length,minutes:quests.reduce((s,q)=>s+q.minutes,0),range:[Math.min(...quests.map(q=>q.minutes)),Math.max(...quests.map(q=>q.minutes))]}));

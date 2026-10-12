@@ -132,10 +132,10 @@ await run('isolated reset clears new state while preserving old exam key',async(
 });
 await ctx.close();
 // Real service-worker upgrade in a separate origin, starting with a minimal old release.
-await run('upgrade actual previous 238-question layout and cache v5, preserve progress and unrelated cache',async()=>{
+await run('upgrade actual previous quest release and cache v6, preserve progress and unrelated cache',async()=>{
  let legacy=true;
- const {execFileSync}=require('node:child_process'),oldRef='fef0f25feec0261ee7010952db3b958eb72da441';
- const oldFiles=new Map();for(const file of ['index.html','styles.css','manifest.webmanifest','icons/icon.svg','data/study-data.js','core.js','app.js','print.html','coverage.html','coverage.csv','data/coverage.json','data/coverage-atoms.json','reports/objective-delta.md','print-complete.html','print-short.html','sources.html','service-worker.js'])oldFiles.set('/'+file,execFileSync('git',['show',oldRef+':'+file],{cwd:root}));oldFiles.set('/',oldFiles.get('/index.html'));
+ const {execFileSync}=require('node:child_process'),oldRef='dca248d3e3be30ca62a3062c239f285b0c983700';
+ const oldFiles=new Map();for(const file of ['index.html','styles.css','quests.css','data/quests.js','quest-core.js','quest-app.js','reports/quest-coverage.json','manifest.webmanifest','icons/icon.svg','data/study-data.js','core.js','app.js','print.html','coverage.html','coverage.csv','data/coverage.json','data/coverage-atoms.json','reports/objective-delta.md','print-complete.html','print-short.html','sources.html','service-worker.js'])oldFiles.set('/'+file,execFileSync('git',['show',oldRef+':'+file],{cwd:root}));oldFiles.set('/',oldFiles.get('/index.html'));
  const server=http.createServer((req,res)=>{
   const pathname=new URL(req.url,'http://localhost').pathname;
   if(legacy){res.setHeader('Content-Type',pathname.endsWith('.css')?'text/css':pathname.endsWith('.js')?'text/javascript':pathname.endsWith('.svg')?'image/svg+xml':pathname.endsWith('.json')||pathname.endsWith('.webmanifest')?'application/json':'text/html');if(oldFiles.has(pathname))res.end(oldFiles.get(pathname));else{res.statusCode=404;res.end('not found');}return;}
@@ -146,9 +146,9 @@ await run('upgrade actual previous 238-question layout and cache v5, preserve pr
  await p.goto(base+"/?mode=practice");await p.waitForFunction(()=>!!navigator.serviceWorker.controller);await p.waitForSelector('.prompt');assert.match(await p.locator('#scopeCount').textContent(),/238問/);
  await p.locator('#unknown').click();await p.evaluate(()=>caches.open('unrelated-app-cache').then(c=>c.put('/keep',new Response('keep'))));
  legacy=false;await p.evaluate(async()=>{const reg=await navigator.serviceWorker.getRegistration();await reg.update();});
- await p.waitForFunction(async()=>!(await caches.keys()).includes('seikei-midterm-202610-5'));
+ await p.waitForFunction(async()=>!(await caches.keys()).includes('seikei-midterm-202610-6'));
  await p.reload();await p.waitForSelector('.prompt');assert.match(await p.locator('#scopeCount').textContent(),/238問/);assert.equal(await p.locator('#missCount').textContent(),'1');assert.ok((await p.evaluate(()=>caches.keys())).includes('unrelated-app-cache'));
- await upgrade.setOffline(true);await p.reload();await p.waitForSelector('.prompt');assert.equal(await p.locator('[data-view]').count(),5);assert.ok((await p.evaluate(()=>caches.keys())).includes('seikei-midterm-202610-6'));assert.match(await p.locator('.app-shell').evaluate(e=>getComputedStyle(e).display),/grid/);
+ await upgrade.setOffline(true);await p.reload();await p.waitForSelector('.prompt');assert.equal(await p.locator('[data-view]').count(),5);assert.ok((await p.evaluate(()=>caches.keys())).includes('seikei-midterm-202610-7'));assert.match(await p.locator('.app-shell').evaluate(e=>getComputedStyle(e).display),/grid/);
  }finally{await upgrade.close();await new Promise(r=>server.close(r));}
 });
 fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify({passed:checks.length,checks,errors},null,2));
