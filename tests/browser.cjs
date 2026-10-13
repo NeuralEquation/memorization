@@ -132,10 +132,10 @@ await run('isolated reset clears new state while preserving old exam key',async(
 });
 await ctx.close();
 // Real service-worker upgrade in a separate origin, starting with a minimal old release.
-await run('upgrade actual previous revised lessons and cache v7, preserve progress and unrelated cache',async()=>{
+await run('upgrade actual previous pilot release and cache v8, preserve progress and unrelated cache',async()=>{
  let legacy=true;
- const {execFileSync}=require('node:child_process'),oldRef='157bc0dc9deb754cc3e288464630b35a198ebd9d';
- const oldFiles=new Map();for(const file of ['index.html','styles.css','quests.css','data/quests.js','quest-core.js','quest-app.js','reports/quest-coverage.json','manifest.webmanifest','icons/icon.svg','data/study-data.js','core.js','app.js','print.html','coverage.html','coverage.csv','data/coverage.json','data/coverage-atoms.json','reports/objective-delta.md','print-complete.html','print-short.html','sources.html','service-worker.js'])oldFiles.set('/'+file,execFileSync('git',['show',oldRef+':'+file],{cwd:root,maxBuffer:16*1024*1024}));oldFiles.set('/',oldFiles.get('/index.html'));
+ const {execFileSync}=require('node:child_process'),oldRef='1492013e2614dd8aec34d1ea4239360f9b0ab869';
+ const oldFiles=new Map();for(const file of ['pilot.html','pilot.css','pilot-core.js','pilot.js','reports/pilot-protocol-2026-10-12.md','index.html','styles.css','quests.css','data/quests.js','quest-core.js','quest-app.js','reports/quest-coverage.json','manifest.webmanifest','icons/icon.svg','data/study-data.js','core.js','app.js','print.html','coverage.html','coverage.csv','data/coverage.json','data/coverage-atoms.json','reports/objective-delta.md','print-complete.html','print-short.html','sources.html','service-worker.js'])oldFiles.set('/'+file,execFileSync('git',['show',oldRef+':'+file],{cwd:root,maxBuffer:16*1024*1024}));oldFiles.set('/',oldFiles.get('/index.html'));
  const server=http.createServer((req,res)=>{
   const pathname=new URL(req.url,'http://localhost').pathname;
   if(legacy){res.setHeader('Content-Type',pathname.endsWith('.css')?'text/css':pathname.endsWith('.js')?'text/javascript':pathname.endsWith('.svg')?'image/svg+xml':pathname.endsWith('.json')||pathname.endsWith('.webmanifest')?'application/json':'text/html');if(oldFiles.has(pathname))res.end(oldFiles.get(pathname));else{res.statusCode=404;res.end('not found');}return;}
@@ -146,9 +146,9 @@ await run('upgrade actual previous revised lessons and cache v7, preserve progre
  await p.goto(base+"/?mode=practice");await p.waitForFunction(()=>!!navigator.serviceWorker.controller);await p.waitForSelector('.prompt');assert.match(await p.locator('#scopeCount').textContent(),/238問/);
  await p.locator('#unknown').click();await p.evaluate(()=>caches.open('unrelated-app-cache').then(c=>c.put('/keep',new Response('keep'))));
  legacy=false;await p.evaluate(async()=>{const reg=await navigator.serviceWorker.getRegistration();await reg.update();});
- await p.waitForFunction(async()=>!(await caches.keys()).includes('seikei-midterm-202610-7'));
+ await p.waitForFunction(async()=>!(await caches.keys()).includes('seikei-midterm-202610-8'));
  await p.reload();await p.waitForSelector('.prompt');assert.match(await p.locator('#scopeCount').textContent(),/238問/);assert.equal(await p.locator('#missCount').textContent(),'1');assert.ok((await p.evaluate(()=>caches.keys())).includes('unrelated-app-cache'));
- await upgrade.setOffline(true);await p.reload();await p.waitForSelector('.prompt');assert.equal(await p.locator('[data-view]').count(),5);assert.ok((await p.evaluate(()=>caches.keys())).includes('seikei-midterm-202610-8'));assert.match(await p.locator('.app-shell').evaluate(e=>getComputedStyle(e).display),/grid/);
+ await upgrade.setOffline(true);await p.reload();await p.waitForSelector('.prompt');assert.equal(await p.locator('[data-view]').count(),5);assert.ok((await p.evaluate(()=>caches.keys())).includes('seikei-midterm-202610-9'));assert.match(await p.locator('.app-shell').evaluate(e=>getComputedStyle(e).display),/grid/);
  }finally{await upgrade.close();await new Promise(r=>server.close(r));}
 });
 fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify({passed:checks.length,checks,errors},null,2));

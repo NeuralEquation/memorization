@@ -23,6 +23,7 @@
     e('questContent').innerHTML=`
       <header class="page-head"><div><p class="eyebrow">QUEST LEARNING</p><h1>学んでから、挑戦しよう。</h1><p>言葉の意味から、例題の解き方まで。一つずつ授業を進めます。</p></div></header>
       ${readIssue?'<p class="quest-warning" role="alert">'+escape(readIssue)+'</p>':''}
+      ${scope?'':'<section class="info-block" aria-label="初めて学ぶ人へ"><p class="eyebrow">クエストの前に · 5〜10分目安</p><h2>はじめての政経</h2><p>予備知識ゼロから、国民・国会・内閣・裁判所・地方のつながりを図でつかもう。暗記は不要です。</p><a href="./primer.html">まず全体像をつかむ →</a></section>'}
       <div class="quest-dashboard">
         <section class="quest-start"><p class="eyebrow">今日の学習時間</p><div class="quest-time" role="group" aria-label="学習時間">${[10,30,60].map(m=>'<button data-qtime="'+m+'" aria-pressed="'+(m===minutes)+'">'+m+'<small>分</small></button>').join('')}</div>
           ${resume?'<div class="quest-resume"><b>続きが保存されています</b><p>'+escape(currentRun.questId?cat.quests[currentRun.questId].title:'間隔を空けた復習')+' · ステップ '+(currentRun.index+1)+' / '+currentRun.steps.length+'</p><button id="questResume" class="primary">続きから再開 →</button></div>':''}
@@ -154,5 +155,6 @@
   window.QuestUI={show:render};
   // A new visitor sees a guided map, rather than an unexplained exam question.
   const requested=new URL(location.href).searchParams.get('mode');
+  if(new URL(location.href).searchParams.get('start')==='Q01'&&!scope&&!unreadable){if(Q.start(p,cat,minutes,Date.now(),'Q01')){screen='play';persist();}const clean=new URL(location.href);clean.searchParams.delete('start');history.replaceState(null,'',clean);}
   if(requested!=='practice')showView('quest');
 })();

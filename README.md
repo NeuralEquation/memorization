@@ -15,6 +15,8 @@
 
 ## 知識ゼロからのクエスト学習
 
+完全に初めてなら[はじめての政経](primer.html)から。身近な例と図で、国民・国会・内閣・裁判所・地方の関係、憲法・法律・条例の役割を7ページでつかみ、Q01へ進めます。5〜10分は設計目安です。読んだ位置だけ別保存し、暗記・正解・読了を開始条件にしません。[導入教材の検証報告](reports/primer-2026-10-13.md)。
+
 初期画面の「クエスト」で10分・30分・60分を選びます。全37クエストを「学ぶ → 基礎確認 → 応用 → 本番形式 → クリア」で進めます。10月12日に全37授業を書き直しました。背景・用語の意味・制度の目的・理由付き比較・一緒に解く例題を小さなページに分け、基礎2択の後に判断点と資料の読み方を学び、既存238問へ進みます。全866ページの授業カードはページごとに戻る・保存・再開ができます。1クエスト11〜19分、初回全範囲約557分（9時間17分）は本文量と設問の思考時間からの設計目安です。初心者の実測値ではなく、休憩・読み直し・追加復習は別途必要です。10分コースは長いクエストを途中まで進めて保存する使い方です。時間による打切りはありません。
 
 誤答後は設問ごとの判断手順と、個別に開ける授業の学び直しを示し、3回答以上空けて類題を最大2問挿入します。未学習の範囲を優先し、残った弱点は再挑戦・翌日復習へ。各クエストの入力途中・選択途中を保存し、別クエストを選んでも続きから再開できます。
@@ -65,11 +67,11 @@
 
 データの編集元は`scripts/build_content.py`と`scripts/audited_material.py`。再生成は順に`python scripts/build_content.py`、`python scripts/build_print.py`、`python scripts/build_short.py`。監査表の再生成には`private/政経_問題集180問_出版社解答照合済み.json`が必要です。公開済みデータの利用・テストには不要です。
 
-`npm test`はNode標準テスト45件（既存15件＋クエスト16件＋授業・旧版互換6件＋実測8件）。授業の編集元は`scripts/quest_lessons.cjs`と`scripts/quest_glossary.cjs`、判断点との対応生成は`scripts/build_quest_lessons.cjs`。クエスト生成は`node scripts/build_quests.cjs`。授業だけの変更では既存教材ファイルを再生成しません。今回の内容修正は教材・監査表・印刷物も再生成しています。`npm install`、`npx playwright install chromium`後、HTTPサーバー起動中に`npm run test:browser`で既存ブラウザ検査20件、`npm run test:quest-browser`でクエスト8件を実行します。`npm run test:lesson-browser`は全37クエスト・866授業ページと全設問を画面操作で通し、重点5クエストの再開・戻る、誤答時の学び直し、オフライン表示も検査します。バンドル済みPlaywright・Edgeも使用可能。`node tests/pilot-browser.cjs`は実測画面7件を検査します。通常画面の旧版移行テストは直前の`157bc0d`とキャッシュ7、授業の進捗互換検査は`dca248d`を参照します。隔離した一時プロファイルを使用し、利用者の進捗は操作しません。
+`npm test`はNode標準テスト45件（既存15件＋クエスト16件＋授業・旧版互換6件＋実測8件）。授業の編集元は`scripts/quest_lessons.cjs`と`scripts/quest_glossary.cjs`、判断点との対応生成は`scripts/build_quest_lessons.cjs`。クエスト生成は`node scripts/build_quests.cjs`。授業だけの変更では既存教材ファイルを再生成しません。今回の内容修正は教材・監査表・印刷物も再生成しています。`npm install`、`npx playwright install chromium`後、HTTPサーバー起動中に`npm run test:browser`で既存ブラウザ検査20件、`npm run test:quest-browser`でクエスト8件を実行します。`npm run test:lesson-browser`は全37クエスト・866授業ページと全設問を画面操作で通し、重点5クエストの再開・戻る、誤答時の学び直し、オフライン表示も検査します。バンドル済みPlaywright・Edgeも使用可能。`node tests/pilot-browser.cjs`は実測画面7件を検査します。`npm run test:primer-browser`は導入教材5件を検査します。通常画面の旧版移行テストは直前の`1492013`とキャッシュ8、授業の進捗互換検査は`dca248d`を参照します。隔離した一時プロファイルを使用し、利用者の進捗は操作しません。
 
 PDF出力はHTTPサーバー起動中に`node scripts/export_pdf.cjs`。旧60ページPDFを上書きせず、新しい2冊を出力します。`python scripts/check_pdf.py`（PyMuPDF・Pillow）は全ページ描画、A4、空白・ページ外文字、問題ID、旧PDFハッシュを検査します。目視点検を省略する代替にはなりません。
 
-教材やコードを公開更新する際は`service-worker.js`のキャッシュ名を更新してください。新しい一式の取得後に切り替え、無関係なキャッシュは保持します。今回のキャッシュは`seikei-midterm-202610-8`、進捗キーは`seikei-midterm-202610-v1`です。意味を変えた問題IDの再利用は避けてください。
+教材やコードを公開更新する際は`service-worker.js`のキャッシュ名を更新してください。新しい一式の取得後に切り替え、無関係なキャッシュは保持します。今回のキャッシュは`seikei-midterm-202610-9`、進捗キーは`seikei-midterm-202610-v1`です。意味を変えた問題IDの再利用は避けてください。
 
 ## 公開範囲
 

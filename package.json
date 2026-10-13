@@ -5,6 +5,7 @@
   "devDependencies": { "playwright": "1.62.1" },
   "scripts": {
     "test": "node --test tests/core.test.js tests/quest.test.js tests/lesson.test.js tests/pilot.test.js",
+    "test:primer-browser": "node tests/primer-browser.cjs",
     "test:pilot-browser": "node tests/pilot-browser.cjs",
     "test:lesson-browser": "node tests/lesson-browser.cjs",
     "test:quest-browser": "node tests/quest-browser.cjs",
